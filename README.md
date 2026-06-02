@@ -1,35 +1,14 @@
-# ORCA AI Tarot Reader
+# ORCA AI Tarot Reader — True Spread + Interpretation Engine
 
-Corrected deployable Vite + React app.
+Includes `src/App.jsx`, `src/data/spread_engine.js`, and `src/data/interpretation_engine.js`.
 
-## Required structure
+Put all GUID PNG images in `public/images/orca-tarot/`.
 
-- `src/App.jsx`
-- `src/main.jsx`
-- `src/styles.css`
-- `src/data/orca_master_deck.js`
-- `public/images/orca-tarot/`
-
-## Add your images
-
-Put all GUID-named PNG card files in:
-
-```text
-public/images/orca-tarot/
-```
-
-## Run locally
+Run locally:
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Deploy
-
-Vercel/Netlify build settings:
-
-```text
-Build command: npm run build
-Output directory: dist
-```
+Deploy: Build command `npm run build`, output directory `dist`.
