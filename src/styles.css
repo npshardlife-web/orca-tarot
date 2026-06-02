@@ -6,16 +6,9 @@
 }
 
 * { box-sizing: border-box; }
-
 body { margin: 0; }
-
-button, select, textarea, input {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
+button, select, textarea, input { font: inherit; }
+button { cursor: pointer; }
 
 .app-shell {
   min-height: 100vh;
@@ -147,10 +140,7 @@ textarea, input, select {
   outline: none;
 }
 
-textarea {
-  min-height: 92px;
-  resize: vertical;
-}
+textarea { min-height: 92px; resize: vertical; }
 
 .layout-help {
   color: #aaa096;
@@ -239,10 +229,7 @@ textarea {
   font-size: 13px;
 }
 
-.missing-box ul {
-  margin-bottom: 0;
-  padding-left: 20px;
-}
+.missing-box ul { margin-bottom: 0; padding-left: 20px; }
 
 .board-panel {
   padding: 22px;
@@ -262,9 +249,7 @@ textarea {
   margin: 4px 0 0;
 }
 
-.compact-title {
-  margin-bottom: 10px;
-}
+.compact-title { margin-bottom: 10px; }
 
 .empty-board {
   min-height: 420px;
@@ -290,6 +275,7 @@ textarea {
   justify-content: center;
   margin-bottom: 14px;
   background: rgba(0, 0, 0, 0.38);
+  position: relative;
 }
 
 .card-back-circle img {
@@ -326,9 +312,7 @@ textarea {
 .celtic-board .slot-9 { grid-column: 5; grid-row: 2; }
 .celtic-board .slot-10 { grid-column: 5; grid-row: 1; }
 
-.orca-board {
-  grid-template-columns: repeat(5, minmax(145px, 1fr));
-}
+.orca-board { grid-template-columns: repeat(5, minmax(145px, 1fr)); }
 
 .tarot-card {
   width: 100%;
@@ -344,9 +328,7 @@ textarea {
   transform-style: preserve-3d;
 }
 
-.tarot-card.selected {
-  outline: 2px solid rgba(247, 201, 109, 0.86);
-}
+.tarot-card.selected { outline: 2px solid rgba(247, 201, 109, 0.86); }
 
 .card-topline {
   display: flex;
@@ -364,9 +346,7 @@ textarea {
   background: #040608;
 }
 
-.tarot-card.compact .card-art-wrap {
-  height: 230px;
-}
+.tarot-card.compact .card-art-wrap { height: 230px; }
 
 .card-image {
   height: 100%;
@@ -376,9 +356,7 @@ textarea {
   display: block;
 }
 
-.reversed-img {
-  transform: rotate(180deg);
-}
+.reversed-img { transform: rotate(180deg); }
 
 .fallback-art {
   height: 100%;
@@ -395,9 +373,7 @@ textarea {
   text-align: center;
 }
 
-.fallback-glyph {
-  font-size: 44px;
-}
+.fallback-glyph { font-size: 44px; }
 
 .card-title {
   margin-top: 10px;
@@ -420,17 +396,9 @@ textarea {
   align-items: start;
 }
 
-.detail-panel {
-  padding: 22px;
-}
-
-.detail-panel h2 {
-  font-size: 40px;
-}
-
-.muted {
-  color: #aca296;
-}
+.detail-panel { padding: 22px; }
+.detail-panel h2 { font-size: 40px; }
+.muted { color: #aca296; }
 
 .meaning-grid {
   display: grid;
@@ -459,9 +427,7 @@ textarea {
   background: rgba(247, 201, 109, 0.07);
 }
 
-.directive {
-  color: #f7d68b;
-}
+.directive { color: #f7d68b; }
 
 .path-line {
   display: block;
@@ -495,58 +461,21 @@ textarea {
   font-size: 13px;
 }
 
-.footer-note code {
-  color: #f7d68b;
-}
+.footer-note code { color: #f7d68b; }
 
 @media (max-width: 980px) {
-  .hero, .main-grid, .detail-grid {
-    grid-template-columns: 1fr;
-    display: grid;
-  }
-
-  .hero {
-    display: grid;
-  }
-
-  .stats-panel {
-    min-width: 0;
-  }
-
-  .control-panel {
-    position: static;
-  }
-
-  .celtic-board, .orca-board {
-    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
-  }
-
-  .celtic-board .spread-slot {
-    grid-column: auto !important;
-    grid-row: auto !important;
-    transform: none !important;
-  }
+  .hero, .main-grid, .detail-grid { grid-template-columns: 1fr; display: grid; }
+  .hero { display: grid; }
+  .stats-panel { min-width: 0; }
+  .control-panel { position: static; }
+  .celtic-board, .orca-board { grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); }
+  .celtic-board .spread-slot { grid-column: auto !important; grid-row: auto !important; transform: none !important; }
 }
 
 @media (max-width: 560px) {
-  .app-shell {
-    padding: 12px;
-  }
-
-  .hero, .control-panel, .board-panel {
-    border-radius: 18px;
-    padding: 16px;
-  }
-
-  .card-art-wrap {
-    height: 250px;
-  }
-
-  .tarot-card.compact .card-art-wrap {
-    height: 210px;
-  }
-
-  .meaning-grid {
-    grid-template-columns: 1fr;
-  }
+  .app-shell { padding: 12px; }
+  .hero, .control-panel, .board-panel { border-radius: 18px; padding: 16px; }
+  .card-art-wrap { height: 250px; }
+  .tarot-card.compact .card-art-wrap { height: 210px; }
+  .meaning-grid { grid-template-columns: 1fr; }
 }
