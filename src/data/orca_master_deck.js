@@ -309,7 +309,7 @@ export const suits = {
     createCard({ id: "flames-court-initiate", name: "Initiate of Flames", suit: "Flames", type: "Court", rank: "Initiate", meaning: "Learning courage, first mission, young fire, first oath.", reversed: "Impulsiveness, posturing, reckless start, fire without discipline.", image: null }),
     createCard({ id: "flames-court-operator", name: "Operator of Flames", suit: "Flames", type: "Court", rank: "Operator", meaning: "Action under pressure, pursuit, bold execution, active will.", reversed: "Burning bridges, speed without aim, aggression without doctrine.", image: null }),
     createCard({ id: "flames-court-keeper", name: "Keeper of Flames", suit: "Flames", type: "Court", rank: "Keeper", meaning: "Sustained passion, moral heat, creative leadership, protected flame.", reversed: "Drama, domination, unstable charisma, charisma used as firestorm.", image: null }),
-    createCard({ id: "flames-court-commander", name: "Commander of Flames", suit: "Flames", type: "Court", rank: "Commander", meaning: "Commanding will, decisive leadership, disciplined fire.", reversed: "Tyranny, rage, command without wisdom, uncontrolled blaze.", image: null }),
+    createCard({ id: "flames-court-commander", name: "Commander of Flames", suit: "Flames", type: "Court", rank: "Commander", meaning: "Commanding will, decisive leadership, disciplined fire.", reversed: "Tyranny, rage, command without wisdom, uncontrolled blaze.", image: img("file_000000002cec71fd85bbfa2ec0eb6fda.png") }),
   ],
 
   Waves: [
