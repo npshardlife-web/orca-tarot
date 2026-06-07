@@ -1,7 +1,7 @@
 {
-  "name": "orca-ai-tarot-system-v2",
+  "name": "orca-tarot-deployable-system",
   "private": true,
-  "version": "2.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

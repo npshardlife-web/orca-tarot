@@ -1,14 +1,45 @@
-# ORCA AI Tarot Reader — True Spread + Interpretation Engine
+# ORCA AI Tarot Reader — Animated Shuffle + Cut Build
 
-Includes `src/App.jsx`, `src/data/spread_engine.js`, and `src/data/interpretation_engine.js`.
+This version adds a complete animated reading ritual to the tarot reader app:
 
-Put all GUID PNG images in `public/images/orca-tarot/`.
+- **Animated shuffling** deck-stack motion before a draw
+- **Animated card cutting** with the top and bottom packets separating, then recombining
+- **Shuffle-only** button
+- **Cut-only** button
+- **Shuffle + Cut + Draw** full ritual button
+- Spread layout, card detail view, reversals, fallback art, and ORCA interpretation export
+- Included Major Arcana art, ORCA card back, Two of Foundations, and Flame court card images that were available in the current build assets
 
-Run locally:
+## Run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Deploy: Build command `npm run build`, output directory `dist`.
+Open the Vite local URL shown in the terminal.
+
+## Build for deployment
+
+```bash
+npm run build
+```
+
+Deploy the `dist` directory.
+
+## Where the animation lives
+
+- Main animated ritual UI: `src/App.jsx`
+- Animation styling: `src/styles.css`
+- Deck data: `src/data/orca_master_deck.js`
+- Spread geometry: `src/data/spread_engine.js`
+- Reading engine: `src/data/interpretation_engine.js`
+
+The animated sequence is controlled by the `stage` state:
+
+- `idle`
+- `shuffling`
+- `cutting`
+- `drawing`
+
+The deck is actually reordered after shuffle and cut, so the animation is not cosmetic only. The app draws from the reordered deck.
