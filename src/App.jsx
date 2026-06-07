@@ -484,6 +484,7 @@ export default function App() {
   const [autoNarrateCards, setAutoNarrateCards] = useState(false);
   const [autoNarrateReading, setAutoNarrateReading] = useState(false);
   const [voiceRate, setVoiceRate] = useState(0.88);
+  const [audioDockCollapsed, setAudioDockCollapsed] = useState(false);
 
   const spread = SPREADS[spreadId] || SPREADS.three_timeline;
   const baseDeck = useMemo(
@@ -679,6 +680,127 @@ export default function App() {
     setPhaseMessage("Interpretation copied to clipboard.");
   }
 
+
+  function renderAlwaysVisibleAudioDock() {
+    const buttonStyle = {
+      border: "1px solid rgba(255,255,255,0.16)",
+      borderRadius: 12,
+      padding: "9px 10px",
+      background: "rgba(255,255,255,0.075)",
+      color: "#fff3d6",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      fontSize: 12,
+      fontWeight: 700,
+    };
+    const onButtonStyle = {
+      ...buttonStyle,
+      borderColor: "rgba(247, 201, 109, 0.72)",
+      background: "rgba(247, 201, 109, 0.18)",
+      color: "#ffe2a0",
+    };
+    return (
+      <aside
+        aria-label="Persistent audio controls"
+        style={{
+          position: "fixed",
+          top: 12,
+          right: 12,
+          zIndex: 999999,
+          width: audioDockCollapsed ? 150 : "min(94vw, 560px)",
+          maxHeight: "calc(100vh - 24px)",
+          overflowY: "auto",
+          padding: audioDockCollapsed ? 10 : 14,
+          border: "2px solid rgba(247, 201, 109, 0.78)",
+          borderRadius: 18,
+          background: "rgba(3, 5, 7, 0.96)",
+          color: "#fff3d6",
+          boxShadow: "0 18px 54px rgba(0,0,0,0.58), 0 0 24px rgba(247,201,109,0.14)",
+          backdropFilter: "blur(16px)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <strong style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#ffe2a0", letterSpacing: "0.08em" }}>
+            <Headphones size={17} /> AUDIO
+          </strong>
+          <button
+            type="button"
+            onClick={() => setAudioDockCollapsed((value) => !value)}
+            style={{ ...buttonStyle, padding: "6px 9px" }}
+            aria-expanded={!audioDockCollapsed}
+          >
+            {audioDockCollapsed ? "Open" : "Hide"}
+          </button>
+        </div>
+        {!audioDockCollapsed && (
+          <>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+              <button type="button" onClick={toggleAudio} style={audioEnabled ? onButtonStyle : buttonStyle}>
+                {audioEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />} {audioEnabled ? "Audio On" : "Enable Audio"}
+              </button>
+              <button type="button" onClick={toggleAtmosphere} style={atmosphereOn ? onButtonStyle : buttonStyle}>
+                <Radio size={15} /> Atmosphere
+              </button>
+              <button type="button" onClick={() => setVoiceEnabled((value) => !value)} style={voiceEnabled ? onButtonStyle : buttonStyle}>
+                <Mic2 size={15} /> Voice
+              </button>
+              <button type="button" onClick={() => setAutoNarrateCards((value) => !value)} style={autoNarrateCards ? onButtonStyle : buttonStyle}>
+                Auto Cards
+              </button>
+              <button type="button" onClick={() => setAutoNarrateReading((value) => !value)} style={autoNarrateReading ? onButtonStyle : buttonStyle}>
+                Auto Reading
+              </button>
+              <button type="button" onClick={() => narrateCard(selectedCard)} disabled={!speechAvailable || !voiceEnabled || !selectedCard} style={buttonStyle}>
+                <Mic2 size={15} /> Say Card
+              </button>
+              <button type="button" onClick={() => narrateReading(reading)} disabled={!speechAvailable || !voiceEnabled || !reading} style={buttonStyle}>
+                <BookOpen size={15} /> Say Reading
+              </button>
+              <button type="button" onClick={stopVoice} disabled={!speechAvailable} style={buttonStyle}>
+                <VolumeX size={15} /> Stop
+              </button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
+              <label style={{ margin: 0, color: "#d8c9a8", fontSize: 12 }}>
+                Atmosphere
+                <input
+                  aria-label="Atmosphere volume"
+                  type="range"
+                  min="0"
+                  max="0.55"
+                  step="0.01"
+                  value={atmosphereLevel}
+                  onChange={(event) => updateAtmosphereLevel(event.target.value)}
+                  disabled={!audioEnabled}
+                  style={{ width: "100%", marginTop: 6, padding: 0, accentColor: "#f7c96d" }}
+                />
+              </label>
+              <label style={{ margin: 0, color: "#d8c9a8", fontSize: 12 }}>
+                Voice Rate
+                <input
+                  aria-label="Voice narration speed"
+                  type="range"
+                  min="0.65"
+                  max="1.15"
+                  step="0.01"
+                  value={voiceRate}
+                  onChange={(event) => setVoiceRate(Number(event.target.value))}
+                  disabled={!speechAvailable}
+                  style={{ width: "100%", marginTop: 6, padding: 0, accentColor: "#f7c96d" }}
+                />
+              </label>
+            </div>
+            <p style={{ margin: "10px 0 0", color: "#b9f0ff", fontSize: 12, lineHeight: 1.4 }}>
+              Fixed audio dock. Use Enable Audio first. Browser speech handles narration; local Web Audio handles atmosphere and cues.
+            </p>
+          </>
+        )}
+      </aside>
+    );
+  }
+
   function renderAudioControls(compact = false) {
     return (
       <div className={compact ? "audio-panel top-audio-panel" : "audio-panel"}>
@@ -730,6 +852,7 @@ export default function App() {
 
   return (
     <main className="app-shell">
+      {renderAlwaysVisibleAudioDock()}
       <section className="hero">
         <div>
           <div className="eyebrow"><Waves size={15} /> ORCA AI TAROT READER</div>
