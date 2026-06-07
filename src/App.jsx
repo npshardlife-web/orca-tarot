@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
@@ -6,11 +6,16 @@ import {
   Copy,
   Eye,
   Flame,
+  Headphones,
+  Mic2,
+  Radio,
   RotateCcw,
   Scissors,
   Shield,
   Shuffle,
   Sparkles,
+  Volume2,
+  VolumeX,
   Waves,
 } from "lucide-react";
 import {
@@ -30,7 +35,214 @@ import { generateInterpretation } from "./data/interpretation_engine.js";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const RITUAL_SPEED = 620;
 
+
+function createRitualAudioEngine() {
+  if (typeof window === "undefined") return null;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+
+  const ctx = new AudioContextClass();
+  const master = ctx.createGain();
+  master.gain.value = 0.34;
+  master.connect(ctx.destination);
+
+  const atmosphereGain = ctx.createGain();
+  atmosphereGain.gain.value = 0;
+  atmosphereGain.connect(master);
+
+  let atmosphereParts = [];
+
+  const resume = async () => {
+    if (ctx.state === "suspended") await ctx.resume();
+  };
+
+  const makeNoiseBuffer = (duration = 1.2) => {
+    const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < length; i += 1) {
+      data[i] = (Math.random() * 2 - 1) * 0.8;
+    }
+    return buffer;
+  };
+
+  const addAtmospherePart = (source, nodes = []) => {
+    atmosphereParts.push({ source, nodes });
+  };
+
+  const startAtmosphere = async (volume = 0.28) => {
+    await resume();
+    if (atmosphereParts.length) {
+      atmosphereGain.gain.setTargetAtTime(volume, ctx.currentTime, 0.8);
+      return;
+    }
+
+    const droneFrequencies = [43.65, 65.41, 98.0, 130.81];
+    droneFrequencies.forEach((frequency, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      osc.type = index % 2 ? "triangle" : "sine";
+      osc.frequency.value = frequency;
+      osc.detune.value = index % 2 ? -7 : 5;
+      filter.type = "lowpass";
+      filter.frequency.value = 420 + index * 120;
+      gain.gain.value = 0.018 + index * 0.004;
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(atmosphereGain);
+      osc.start();
+      addAtmospherePart(osc, [filter, gain]);
+    });
+
+    const sea = ctx.createBufferSource();
+    const seaFilter = ctx.createBiquadFilter();
+    const seaGain = ctx.createGain();
+    sea.buffer = makeNoiseBuffer(2.4);
+    sea.loop = true;
+    seaFilter.type = "lowpass";
+    seaFilter.frequency.value = 760;
+    seaFilter.Q.value = 0.7;
+    seaGain.gain.value = 0.045;
+    sea.connect(seaFilter);
+    seaFilter.connect(seaGain);
+    seaGain.connect(atmosphereGain);
+    sea.start();
+    addAtmospherePart(sea, [seaFilter, seaGain]);
+
+    const pulse = ctx.createOscillator();
+    const pulseGain = ctx.createGain();
+    const pulseFilter = ctx.createBiquadFilter();
+    pulse.type = "sine";
+    pulse.frequency.value = 174.61;
+    pulseFilter.type = "bandpass";
+    pulseFilter.frequency.value = 260;
+    pulseFilter.Q.value = 5;
+    pulseGain.gain.value = 0.012;
+    pulse.connect(pulseFilter);
+    pulseFilter.connect(pulseGain);
+    pulseGain.connect(atmosphereGain);
+    pulse.start();
+    addAtmospherePart(pulse, [pulseFilter, pulseGain]);
+
+    atmosphereGain.gain.setTargetAtTime(volume, ctx.currentTime, 0.8);
+  };
+
+  const stopAtmosphere = () => {
+    atmosphereGain.gain.setTargetAtTime(0, ctx.currentTime, 0.55);
+    window.setTimeout(() => {
+      atmosphereParts.forEach(({ source, nodes }) => {
+        try { source.stop(); } catch {}
+        try { source.disconnect(); } catch {}
+        nodes.forEach((node) => {
+          try { node.disconnect(); } catch {}
+        });
+      });
+      atmosphereParts = [];
+    }, 720);
+  };
+
+  const setMasterVolume = (volume) => {
+    master.gain.setTargetAtTime(volume, ctx.currentTime, 0.1);
+  };
+
+  const setAtmosphereVolume = (volume) => {
+    atmosphereGain.gain.setTargetAtTime(volume, ctx.currentTime, 0.25);
+  };
+
+  const playTone = async ({ frequency = 440, endFrequency = null, duration = 0.16, type = "sine", delay = 0, volume = 0.09 }) => {
+    await resume();
+    const start = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(frequency, start);
+    if (endFrequency) osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + duration);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(start);
+    osc.stop(start + duration + 0.04);
+  };
+
+  const playNoise = async ({ duration = 0.12, delay = 0, volume = 0.06, frequency = 900, q = 1.8 }) => {
+    await resume();
+    const start = ctx.currentTime + delay;
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    source.buffer = makeNoiseBuffer(duration + 0.05);
+    filter.type = "bandpass";
+    filter.frequency.value = frequency;
+    filter.Q.value = q;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(master);
+    source.start(start);
+    source.stop(start + duration + 0.05);
+  };
+
+  const pulse = async (kind) => {
+    if (kind === "shuffle") {
+      for (let i = 0; i < 7; i += 1) {
+        playNoise({ duration: 0.065, delay: i * 0.055, volume: 0.055, frequency: 650 + i * 85, q: 2.2 });
+      }
+      playTone({ frequency: 174.61, endFrequency: 220, duration: 0.42, type: "triangle", volume: 0.035 });
+    } else if (kind === "cut") {
+      playTone({ frequency: 880, endFrequency: 196, duration: 0.26, type: "sawtooth", volume: 0.055 });
+      playNoise({ duration: 0.08, delay: 0.05, volume: 0.075, frequency: 1500, q: 4 });
+      playTone({ frequency: 261.63, duration: 0.12, delay: 0.28, type: "square", volume: 0.035 });
+    } else if (kind === "draw") {
+      [261.63, 329.63, 392, 523.25].forEach((frequency, index) => {
+        playTone({ frequency, duration: 0.22, delay: index * 0.08, type: "sine", volume: 0.045 });
+      });
+    } else if (kind === "select") {
+      playTone({ frequency: 392, endFrequency: 523.25, duration: 0.14, type: "sine", volume: 0.035 });
+    }
+  };
+
+  const dispose = () => {
+    stopAtmosphere();
+    window.setTimeout(() => {
+      try { ctx.close(); } catch {}
+    }, 900);
+  };
+
+  return { resume, startAtmosphere, stopAtmosphere, setMasterVolume, setAtmosphereVolume, pulse, dispose };
+}
+
 const romanOrNumber = (card) => card.rank || card.number || "";
+
+
+function cardNarrationText(card) {
+  if (!card) return "No card is selected.";
+  const orientation = card.reversedDraw ? "reversed" : "upright";
+  const meaning = card.reversedDraw ? card.reversed : card.meaning;
+  const position = card.positionLabel ? `${card.positionLabel}. ` : "";
+  const role = card.positionRole ? `Role: ${card.positionRole}. ` : "";
+  return `${position}${card.name}, ${orientation}. ${role}${meaning}`;
+}
+
+function readingNarrationText(reading) {
+  if (!reading) return "No reading is open.";
+  const positionLines = reading.positionReadings
+    .slice(0, 10)
+    .map((entry, index) => `Card ${index + 1}. ${entry.positionLabel}. ${entry.cardName}, ${entry.orientation}. ${entry.reading} Directive: ${entry.directive}`)
+    .join(" ");
+  const patternLines = reading.patterns
+    .slice(0, 4)
+    .map((pattern) => `${pattern.title}. ${pattern.text}`)
+    .join(" ");
+  const actionLines = reading.actionPlan
+    .map((item) => `${item.step}. ${item.text}`)
+    .join(" ");
+  return `ORCA interpretation. ${reading.summary} Position readings. ${positionLines} Pattern analysis. ${patternLines} Action plan. ${actionLines}`;
+}
 
 function drawFromOrderedDeck(deck, spread, allowReversals) {
   return attachPositions(
@@ -210,7 +422,7 @@ function ReadingBoard({ spread, cards, selectedId, setSelectedId }) {
   );
 }
 
-function DetailPanel({ card }) {
+function DetailPanel({ card, onNarrateCard, onStopVoice, speechAvailable }) {
   if (!card) return null;
   const meaning = card.reversedDraw ? card.reversed : card.meaning;
 
@@ -235,6 +447,14 @@ function DetailPanel({ card }) {
           <h3><BookOpen size={17} /> Directive</h3>
           <p className="directive">Read the card through the position first, then the suit. The position gives the job. The suit gives the system layer. The orientation shows whether the signal is open or blocked.</p>
         </div>
+        <div className="voice-actions">
+          <button type="button" onClick={() => onNarrateCard?.(card)} disabled={!speechAvailable}>
+            <Mic2 size={16} /> Narrate Card
+          </button>
+          <button type="button" onClick={onStopVoice} disabled={!speechAvailable}>
+            <VolumeX size={16} /> Stop Voice
+          </button>
+        </div>
         <code className="path-line">{card.image || "Image missing — fallback art active."}</code>
       </section>
     </div>
@@ -256,6 +476,14 @@ export default function App() {
   const [cutIndex, setCutIndex] = useState(0);
   const [nonce, setNonce] = useState(0);
   const [reading, setReading] = useState(null);
+  const audioEngineRef = useRef(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [atmosphereOn, setAtmosphereOn] = useState(false);
+  const [atmosphereLevel, setAtmosphereLevel] = useState(0.28);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [autoNarrateCards, setAutoNarrateCards] = useState(false);
+  const [autoNarrateReading, setAutoNarrateReading] = useState(false);
+  const [voiceRate, setVoiceRate] = useState(0.88);
 
   const spread = SPREADS[spreadId] || SPREADS.three_timeline;
   const baseDeck = useMemo(
@@ -266,6 +494,92 @@ export default function App() {
   const validation = validateSpreadDeck(spread, baseDeck);
   const selectedCard = drawnCards.find((card) => card.id === selectedId) || drawnCards[0] || null;
   const busy = stage !== "idle";
+  const speechAvailable = typeof window !== "undefined" && "speechSynthesis" in window;
+
+  function ensureAudioEngine() {
+    if (!audioEngineRef.current) audioEngineRef.current = createRitualAudioEngine();
+    const engine = audioEngineRef.current;
+    if (!engine) {
+      setPhaseMessage("This browser does not support Web Audio.");
+      return null;
+    }
+    engine.resume?.();
+    return engine;
+  }
+
+  function playAudioCue(kind) {
+    if (!audioEnabled) return;
+    const engine = ensureAudioEngine();
+    engine?.pulse(kind);
+  }
+
+  function toggleAudio() {
+    if (audioEnabled) {
+      audioEngineRef.current?.stopAtmosphere?.();
+      setAtmosphereOn(false);
+      setAudioEnabled(false);
+      setPhaseMessage("Audio disabled.");
+      return;
+    }
+    const engine = ensureAudioEngine();
+    if (!engine) return;
+    engine.setMasterVolume?.(0.34);
+    setAudioEnabled(true);
+    setPhaseMessage("Audio enabled. Atmosphere, ritual cues, and voice controls are ready.");
+  }
+
+  function toggleAtmosphere() {
+    const engine = ensureAudioEngine();
+    if (!engine) return;
+    setAudioEnabled(true);
+    if (atmosphereOn) {
+      engine.stopAtmosphere();
+      setAtmosphereOn(false);
+      setPhaseMessage("Atmospheric background sound paused.");
+    } else {
+      engine.startAtmosphere(atmosphereLevel);
+      setAtmosphereOn(true);
+      setPhaseMessage("Atmospheric background sound engaged.");
+    }
+  }
+
+  function updateAtmosphereLevel(value) {
+    const next = Number(value);
+    setAtmosphereLevel(next);
+    audioEngineRef.current?.setAtmosphereVolume?.(atmosphereOn ? next : 0);
+  }
+
+  function speakText(text, interrupt = true) {
+    if (!voiceEnabled || !speechAvailable || !text) return;
+    if (interrupt) window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices?.() || [];
+    utterance.voice = voices.find((voice) => /^en/i.test(voice.lang || "") && /male|david|daniel|george|guy|mark|ryan/i.test(voice.name || "")) || voices.find((voice) => /^en/i.test(voice.lang || "")) || null;
+    utterance.rate = voiceRate;
+    utterance.pitch = 0.86;
+    utterance.volume = 0.92;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopVoice() {
+    if (speechAvailable) window.speechSynthesis.cancel();
+  }
+
+  function narrateCard(card = selectedCard) {
+    speakText(cardNarrationText(card));
+    playAudioCue("select");
+  }
+
+  function narrateReading(nextReading = reading) {
+    speakText(readingNarrationText(nextReading));
+  }
+
+  useEffect(() => {
+    return () => {
+      audioEngineRef.current?.dispose?.();
+      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    };
+  }, []);
 
   useEffect(() => {
     setOrderedDeck(baseDeck);
@@ -280,6 +594,7 @@ export default function App() {
     setNonce((n) => n + 1);
     setStage("shuffling");
     setPhaseMessage("Shuffling the ORCA deck...");
+    playAudioCue("shuffle");
     const seed = `${Date.now()}-${question}-${spreadId}`;
     const shuffled = shuffleDeck(baseDeck, seed);
     await sleep(980);
@@ -296,6 +611,7 @@ export default function App() {
     setCutIndex(safeCut);
     setStage("cutting");
     setPhaseMessage(`Cutting the deck at card ${safeCut}...`);
+    playAudioCue("cut");
     await sleep(900);
     const cutDeck = [...source.slice(safeCut), ...source.slice(0, safeCut)];
     setOrderedDeck(cutDeck);
@@ -312,6 +628,7 @@ export default function App() {
     setNonce((n) => n + 1);
     setStage("shuffling");
     setPhaseMessage("Shuffle phase: randomizing the deck...");
+    playAudioCue("shuffle");
     const seed = `${Date.now()}-${question}-${spreadId}-${baseDeck.length}`;
     const shuffled = shuffleDeck(baseDeck, seed);
     await sleep(980);
@@ -322,6 +639,7 @@ export default function App() {
     setNonce((n) => n + 1);
     setStage("cutting");
     setPhaseMessage(`Cut phase: splitting at card ${safeCut} and recombining...`);
+    playAudioCue("cut");
     await sleep(920);
 
     const cutDeck = [...shuffled.slice(safeCut), ...shuffled.slice(0, safeCut)];
@@ -329,6 +647,7 @@ export default function App() {
     setNonce((n) => n + 1);
     setStage("drawing");
     setPhaseMessage("Draw phase: laying cards into the spread...");
+    playAudioCue("draw");
     await sleep(620);
 
     const positioned = drawFromOrderedDeck(cutDeck, spread, allowReversals);
@@ -338,6 +657,11 @@ export default function App() {
     setReading(nextReading);
     setStage("idle");
     setPhaseMessage("Reading open. Select any card for detail.");
+    if (autoNarrateReading) {
+      narrateReading(nextReading);
+    } else if (autoNarrateCards) {
+      speakText(positioned.map((card) => cardNarrationText(card)).join(" "));
+    }
   }
 
   function resetReading() {
@@ -345,6 +669,7 @@ export default function App() {
     setDrawnCards([]);
     setSelectedId(null);
     setReading(null);
+    stopVoice();
     setPhaseMessage("Reading cleared. Deck remains in current order.");
   }
 
@@ -361,7 +686,7 @@ export default function App() {
           <div className="eyebrow"><Waves size={15} /> ORCA AI TAROT READER</div>
           <h1>Shuffle. Cut. Reveal.</h1>
           <p>
-            A deployable ORCA tarot reader with animated shuffling, animated deck cutting, spread layout, reversals, and a full interpretation engine.
+            A deployable ORCA tarot reader with animated shuffling, animated deck cutting, atmospheric audio, ritual cues, spoken card narration, and vocal interpretation.
           </p>
         </div>
         <div className="stats-panel">
@@ -404,6 +729,46 @@ export default function App() {
             <button className={`toggle ${includeMissingImages ? "on" : ""}`} onClick={() => setIncludeMissingImages((v) => !v)} type="button">Fallback Art</button>
           </div>
 
+          <div className="audio-panel">
+            <div className="audio-title"><Headphones size={17} /> Audio Ritual</div>
+            <div className="toggle-group audio-toggles">
+              <button className={`toggle ${audioEnabled ? "on" : ""}`} onClick={toggleAudio} type="button">
+                {audioEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />} {audioEnabled ? "Audio On" : "Enable Audio"}
+              </button>
+              <button className={`toggle ${atmosphereOn ? "on" : ""}`} onClick={toggleAtmosphere} type="button"><Radio size={15} /> Atmosphere</button>
+              <button className={`toggle ${voiceEnabled ? "on" : ""}`} onClick={() => setVoiceEnabled((v) => !v)} type="button"><Mic2 size={15} /> Voice</button>
+              <button className={`toggle ${autoNarrateCards ? "on" : ""}`} onClick={() => setAutoNarrateCards((v) => !v)} type="button">Auto Cards</button>
+              <button className={`toggle ${autoNarrateReading ? "on" : ""}`} onClick={() => setAutoNarrateReading((v) => !v)} type="button">Auto Reading</button>
+            </div>
+            <div className="audio-slider">
+              <span>Atmosphere</span>
+              <input
+                aria-label="Atmosphere volume"
+                type="range"
+                min="0"
+                max="0.55"
+                step="0.01"
+                value={atmosphereLevel}
+                onChange={(event) => updateAtmosphereLevel(event.target.value)}
+                disabled={!audioEnabled}
+              />
+            </div>
+            <div className="audio-slider">
+              <span>Voice Rate</span>
+              <input
+                aria-label="Voice narration speed"
+                type="range"
+                min="0.65"
+                max="1.15"
+                step="0.01"
+                value={voiceRate}
+                onChange={(event) => setVoiceRate(Number(event.target.value))}
+                disabled={!speechAvailable}
+              />
+            </div>
+            <p className="audio-note">Atmosphere and ritual cues are generated locally with Web Audio. Narration uses the browser speech voice.</p>
+          </div>
+
           <button className="draw-button" type="button" disabled={busy || !validation.ok} onClick={drawReading}>
             <Sparkles size={18} /> Shuffle + Cut + Draw
           </button>
@@ -437,7 +802,7 @@ export default function App() {
             <ReadingBoard spread={spread} cards={drawnCards} selectedId={selectedId} setSelectedId={setSelectedId} />
           </section>
 
-          <DetailPanel card={selectedCard} />
+          <DetailPanel card={selectedCard} onNarrateCard={narrateCard} onStopVoice={stopVoice} speechAvailable={speechAvailable && voiceEnabled} />
 
           {reading && (
             <section className="reading-output">
@@ -446,7 +811,11 @@ export default function App() {
                   <h2>ORCA Interpretation</h2>
                   <p>{reading.analysis.dominantSuit} dominant · intensity {reading.analysis.intensity}</p>
                 </div>
-                <button type="button" onClick={copyReading}><Copy size={16} /> Copy Reading</button>
+                <div className="reading-actions">
+                  <button type="button" onClick={() => narrateReading(reading)} disabled={!speechAvailable || !voiceEnabled}><Mic2 size={16} /> Narrate</button>
+                  <button type="button" onClick={stopVoice} disabled={!speechAvailable}><VolumeX size={16} /> Stop</button>
+                  <button type="button" onClick={copyReading}><Copy size={16} /> Copy Reading</button>
+                </div>
               </div>
               <pre>{reading.exportText}</pre>
             </section>
@@ -455,7 +824,7 @@ export default function App() {
       </section>
 
       <div className="footer-note">
-        <Shield size={15} /> Animated sequence is built into <code>src/App.jsx</code>: shuffle phase, cut phase, draw phase.
+        <Shield size={15} /> Ritual engine lives in <code>src/App.jsx</code>: shuffle, cut, draw, atmosphere, card narration, and vocal interpretation.
       </div>
     </main>
   );

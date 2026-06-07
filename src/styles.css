@@ -585,3 +585,92 @@ textarea { min-height: 92px; resize: vertical; }
   .ritual-deck { height: 190px; }
   .deck-motion-card { width: 94px; height: 142px; }
 }
+
+.audio-panel {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid rgba(87, 190, 214, 0.24);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(87, 190, 214, 0.10), transparent 38%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.audio-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b9f0ff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.audio-toggles {
+  margin-top: 12px;
+}
+
+.audio-toggles .toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.audio-slider {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: #d8c9a8;
+  font-size: 12px;
+}
+
+.audio-slider input[type="range"] {
+  padding: 0;
+  accent-color: #f7c96d;
+}
+
+.audio-note {
+  margin: 10px 0 0;
+  color: #9fb0b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.voice-actions, .reading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.voice-actions button, .reading-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #e8dfce;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.voice-actions button:first-child, .reading-actions button:first-child {
+  border-color: rgba(87, 190, 214, 0.42);
+  background: rgba(87, 190, 214, 0.12);
+  color: #c9f5ff;
+}
+
+.reading-actions {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+@media (max-width: 560px) {
+  .audio-slider { grid-template-columns: 1fr; gap: 6px; }
+  .reading-actions { justify-content: flex-start; }
+}
