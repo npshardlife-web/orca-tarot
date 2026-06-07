@@ -55,3 +55,5 @@ The animated sequence is controlled by the `stage` state:
 - `drawing`
 
 The deck is actually reordered after shuffle and cut, so the animation is not cosmetic only.
+
+Audio visibility fix: audio controls now appear twice — in a top audio control bar directly under the hero and inside the Reading Controls sidebar.
