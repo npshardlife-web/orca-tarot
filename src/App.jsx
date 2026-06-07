@@ -679,6 +679,55 @@ export default function App() {
     setPhaseMessage("Interpretation copied to clipboard.");
   }
 
+  function renderAudioControls(compact = false) {
+    return (
+      <div className={compact ? "audio-panel top-audio-panel" : "audio-panel"}>
+        <div className="audio-title"><Headphones size={17} /> Audio Controls</div>
+        <div className="toggle-group audio-toggles">
+          <button className={`toggle ${audioEnabled ? "on" : ""}`} onClick={toggleAudio} type="button">
+            {audioEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />} {audioEnabled ? "Audio On" : "Enable Audio"}
+          </button>
+          <button className={`toggle ${atmosphereOn ? "on" : ""}`} onClick={toggleAtmosphere} type="button"><Radio size={15} /> Atmosphere</button>
+          <button className={`toggle ${voiceEnabled ? "on" : ""}`} onClick={() => setVoiceEnabled((v) => !v)} type="button"><Mic2 size={15} /> Voice</button>
+          <button className={`toggle ${autoNarrateCards ? "on" : ""}`} onClick={() => setAutoNarrateCards((v) => !v)} type="button">Auto Cards</button>
+          <button className={`toggle ${autoNarrateReading ? "on" : ""}`} onClick={() => setAutoNarrateReading((v) => !v)} type="button">Auto Reading</button>
+        </div>
+        <div className="audio-slider-grid">
+          <div className="audio-slider">
+            <span>Atmosphere</span>
+            <input
+              aria-label="Atmosphere volume"
+              type="range"
+              min="0"
+              max="0.55"
+              step="0.01"
+              value={atmosphereLevel}
+              onChange={(event) => updateAtmosphereLevel(event.target.value)}
+              disabled={!audioEnabled}
+            />
+          </div>
+          <div className="audio-slider">
+            <span>Voice Rate</span>
+            <input
+              aria-label="Voice narration speed"
+              type="range"
+              min="0.65"
+              max="1.15"
+              step="0.01"
+              value={voiceRate}
+              onChange={(event) => setVoiceRate(Number(event.target.value))}
+              disabled={!speechAvailable}
+            />
+          </div>
+        </div>
+        <p className="audio-note">
+          Use Enable Audio first. Atmosphere and ritual cues are local Web Audio. Narration uses the browser speech voice.
+          {!speechAvailable ? " Browser voice narration is not available here." : ""}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <main className="app-shell">
       <section className="hero">
@@ -695,6 +744,8 @@ export default function App() {
           <div><strong>{spread.positions.length}</strong><span>spread slots</span></div>
         </div>
       </section>
+
+      {renderAudioControls(true)}
 
       <section className="main-grid">
         <aside className="control-panel">
@@ -729,45 +780,7 @@ export default function App() {
             <button className={`toggle ${includeMissingImages ? "on" : ""}`} onClick={() => setIncludeMissingImages((v) => !v)} type="button">Fallback Art</button>
           </div>
 
-          <div className="audio-panel">
-            <div className="audio-title"><Headphones size={17} /> Audio Ritual</div>
-            <div className="toggle-group audio-toggles">
-              <button className={`toggle ${audioEnabled ? "on" : ""}`} onClick={toggleAudio} type="button">
-                {audioEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />} {audioEnabled ? "Audio On" : "Enable Audio"}
-              </button>
-              <button className={`toggle ${atmosphereOn ? "on" : ""}`} onClick={toggleAtmosphere} type="button"><Radio size={15} /> Atmosphere</button>
-              <button className={`toggle ${voiceEnabled ? "on" : ""}`} onClick={() => setVoiceEnabled((v) => !v)} type="button"><Mic2 size={15} /> Voice</button>
-              <button className={`toggle ${autoNarrateCards ? "on" : ""}`} onClick={() => setAutoNarrateCards((v) => !v)} type="button">Auto Cards</button>
-              <button className={`toggle ${autoNarrateReading ? "on" : ""}`} onClick={() => setAutoNarrateReading((v) => !v)} type="button">Auto Reading</button>
-            </div>
-            <div className="audio-slider">
-              <span>Atmosphere</span>
-              <input
-                aria-label="Atmosphere volume"
-                type="range"
-                min="0"
-                max="0.55"
-                step="0.01"
-                value={atmosphereLevel}
-                onChange={(event) => updateAtmosphereLevel(event.target.value)}
-                disabled={!audioEnabled}
-              />
-            </div>
-            <div className="audio-slider">
-              <span>Voice Rate</span>
-              <input
-                aria-label="Voice narration speed"
-                type="range"
-                min="0.65"
-                max="1.15"
-                step="0.01"
-                value={voiceRate}
-                onChange={(event) => setVoiceRate(Number(event.target.value))}
-                disabled={!speechAvailable}
-              />
-            </div>
-            <p className="audio-note">Atmosphere and ritual cues are generated locally with Web Audio. Narration uses the browser speech voice.</p>
-          </div>
+          {renderAudioControls()}
 
           <button className="draw-button" type="button" disabled={busy || !validation.ok} onClick={drawReading}>
             <Sparkles size={18} /> Shuffle + Cut + Draw

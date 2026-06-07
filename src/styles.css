@@ -674,3 +674,53 @@ textarea { min-height: 92px; resize: vertical; }
   .audio-slider { grid-template-columns: 1fr; gap: 6px; }
   .reading-actions { justify-content: flex-start; }
 }
+
+/* Audio controls visibility fix: keep audio controls visible near the top of the app, not only inside the left sidebar. */
+.top-audio-panel {
+  max-width: 1440px;
+  margin: -6px auto 24px auto;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.55fr) minmax(260px, 1.4fr) minmax(260px, 1.2fr);
+  align-items: center;
+  gap: 14px;
+  border-color: rgba(247, 201, 109, 0.42);
+  background:
+    radial-gradient(circle at top left, rgba(247, 201, 109, 0.14), transparent 36%),
+    radial-gradient(circle at top right, rgba(87, 190, 214, 0.12), transparent 38%),
+    rgba(0, 0, 0, 0.42);
+}
+
+.top-audio-panel .audio-title {
+  color: #ffe2a0;
+  font-size: 14px;
+}
+
+.audio-slider-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.top-audio-panel .audio-slider-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.top-audio-panel .audio-toggles,
+.top-audio-panel .audio-note {
+  margin-top: 0;
+}
+
+.top-audio-panel .audio-note {
+  font-size: 12px;
+}
+
+@media (max-width: 980px) {
+  .top-audio-panel {
+    grid-template-columns: 1fr;
+    margin: 0 auto 18px auto;
+  }
+  .top-audio-panel .audio-slider-grid {
+    grid-template-columns: 1fr;
+  }
+}
