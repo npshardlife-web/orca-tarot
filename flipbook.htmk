@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ORCA Tarot Flipbook</title>
+  <style>
+    :root {
+      --bg-0: #080b12;
+      --bg-1: #0c1422;
+      --panel: rgba(15, 23, 42, 0.82);
+      --panel-strong: rgba(15, 23, 42, 0.96);
+      --ink: #f5f1e8;
+      --muted: #b8c2d6;
+      --line: rgba(255, 255, 255, 0.15);
+      --gold: #d8b35d;
+      --blue: #7dd3fc;
+      --red: #fb7185;
+      --green: #86efac;
+      --shadow: rgba(0, 0, 0, 0.45);
+      --radius: 22px;
+      color-scheme: dark;
+      font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background:
+        radial-gradient(circle at 18% 10%, rgba(125, 211, 252, 0.16), transparent 28%),
+        radial-gradient(circle at 86% 18%, rgba(216, 179, 93, 0.18), transparent 26%),
+        radial-gradient(circle at 50% 110%, rgba(251, 113, 133, 0.12), transparent 35%),
+        linear-gradient(140deg, var(--bg-0), var(--bg-1) 52%, #09111d);
+      color: var(--ink);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.13;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black, transparent 85%);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 0.72rem 1rem;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.18);
+    }
+
+    button:hover { background: rgba(255,255,255,0.14); border-color: rgba(216,179,93,0.55); }
+    button:active { transform: translateY(1px) scale(0.99); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 0.8rem;
+      padding: clamp(0.7rem, 2vw, 1.4rem);
+      position: relative;
+      z-index: 1;
+    }
+
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      min-width: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      min-width: 0;
+    }
+
+    .sigil {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(216,179,93,0.92), rgba(125,211,252,0.2) 54%, rgba(255,255,255,0.06));
+      border: 1px solid rgba(216,179,93,0.45);
+      box-shadow: 0 0 34px rgba(216,179,93,0.22);
+      flex: 0 0 auto;
+    }
+
+    .sigil svg { width: 31px; height: 31px; }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 2.7vw, 2rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subline {
+      margin: 0.18rem 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      min-height: 42px;
+    }
+
+    .field input, .field select {
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+      max-width: 190px;
+    }
+
+    .field input::placeholder { color: rgba(245,241,232,0.55); }
+    .field select { color: var(--ink); }
+    .field option { color: #0f172a; }
+
+    main {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      perspective: 1700px;
+    }
+
+    .stage {
+      width: min(1120px, 100%);
+      height: min(690px, 100%);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .book {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-radius: var(--radius);
+      filter: drop-shadow(0 26px 60px var(--shadow));
+      transform-style: preserve-3d;
+      position: relative;
+    }
+
+    .book::after {
+      content: "";
+      position: absolute;
+      top: 2.3%;
+      bottom: 2.3%;
+      left: 50%;
+      width: 1px;
+      background: linear-gradient(transparent, rgba(255,255,255,0.24), transparent);
+      box-shadow: -10px 0 26px rgba(0,0,0,0.33), 10px 0 26px rgba(255,255,255,0.04);
+      z-index: 10;
+    }
+
+    .page {
+      min-width: 0;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.13), transparent 20%, rgba(0,0,0,0.08) 70%),
+        radial-gradient(circle at 50% 10%, rgba(216,179,93,0.12), transparent 38%),
+        rgba(13, 19, 33, 0.95);
+    }
+
+    .page.left {
+      border-radius: var(--radius) 0 0 var(--radius);
+      border-right: 0;
+    }
+
+    .page.right {
+      border-radius: 0 var(--radius) var(--radius) 0;
+      border-left: 0;
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.17;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.16), transparent 1.5px),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,0.12), transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04), transparent 25%, transparent 75%, rgba(0,0,0,0.08));
+      background-size: 120px 120px, 70px 70px, 100% 100%;
+      mix-blend-mode: screen;
+    }
+
+    .page-inner {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: clamp(0.55rem, 1.4vw, 1rem);
+      padding: clamp(1rem, 2vw, 1.55rem);
+    }
+
+    .folio {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(245,241,232,0.68);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+
+    .card-page {
+      display: grid;
+      grid-template-columns: minmax(130px, 0.62fr) minmax(0, 1fr);
+      gap: clamp(0.75rem, 1.8vw, 1.25rem);
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .art-wrap {
+      min-height: 0;
+      border-radius: 18px;
+      border: 1px solid rgba(216,179,93,0.35);
+      background:
+        radial-gradient(circle at 50% 16%, rgba(216,179,93,0.26), transparent 34%),
+        linear-gradient(160deg, rgba(125,211,252,0.13), rgba(251,113,133,0.08)),
+        rgba(255,255,255,0.05);
+      padding: 0.55rem;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.24);
+      overflow: hidden;
+    }
+
+    .card-art {
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+      border-radius: 13px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.18);
+    }
+
+    .placeholder-art {
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+      border-radius: 13px;
+      border: 1px solid rgba(255,255,255,0.14);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(216,179,93,0.30), transparent 26%),
+        linear-gradient(145deg, rgba(7,10,19,0.18), rgba(255,255,255,0.08));
+    }
+
+    .placeholder-art::before {
+      content: "";
+      position: absolute;
+      width: 74%;
+      aspect-ratio: 1;
+      border: 1px solid rgba(216,179,93,0.42);
+      border-radius: 50%;
+      box-shadow: inset 0 0 30px rgba(216,179,93,0.08), 0 0 40px rgba(125,211,252,0.08);
+    }
+
+    .placeholder-art::after {
+      content: "✦";
+      position: absolute;
+      font-size: clamp(3.3rem, 8vw, 7rem);
+      color: rgba(216,179,93,0.74);
+      text-shadow: 0 0 22px rgba(216,179,93,0.26);
+    }
+
+    .placeholder-text {
+      position: absolute;
+      bottom: 1rem;
+      left: 0.8rem;
+      right: 0.8rem;
+      color: rgba(245,241,232,0.72);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .card-copy {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 0.25rem;
+      scrollbar-width: thin;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 2.55rem);
+      line-height: 1.04;
+      letter-spacing: 0.03em;
+    }
+
+    .card-meta {
+      margin: 0.45rem 0 0.75rem;
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.07);
+      border-radius: 999px;
+      padding: 0.18rem 0.55rem;
+      color: rgba(245,241,232,0.78);
+    }
+
+    .meaning-block {
+      margin: 0.75rem 0;
+      padding: 0.75rem 0.85rem;
+      border-left: 2px solid rgba(216,179,93,0.72);
+      background: rgba(255,255,255,0.055);
+      border-radius: 0 14px 14px 0;
+    }
+
+    .meaning-block h3 {
+      margin: 0 0 0.32rem;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.72rem;
+      color: var(--gold);
+    }
+
+    .meaning-block p, .meaning-block ul {
+      margin: 0;
+      color: rgba(245,241,232,0.89);
+      line-height: 1.48;
+      font-size: clamp(0.94rem, 1.25vw, 1.02rem);
+    }
+
+    .meaning-block ul {
+      padding-left: 1rem;
+    }
+
+    .intro-page {
+      display: grid;
+      align-content: center;
+      gap: 1rem;
+      height: 100%;
+      text-align: center;
+    }
+
+    .intro-page h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 0.98;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .intro-page p {
+      margin: 0 auto;
+      color: var(--muted);
+      max-width: 48ch;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      line-height: 1.5;
+    }
+
+    .source-list {
+      margin: 0.7rem auto 0;
+      padding: 0;
+      list-style: none;
+      max-width: 56ch;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 0.85rem;
+      color: rgba(245,241,232,0.7);
+    }
+
+    .source-list li {
+      padding: 0.2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .notice {
+      max-width: 760px;
+      margin: auto;
+      border: 1px solid rgba(216,179,93,0.34);
+      background: rgba(15,23,42,0.9);
+      border-radius: var(--radius);
+      padding: clamp(1rem, 2vw, 1.35rem);
+      box-shadow: 0 20px 58px rgba(0,0,0,0.35);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      line-height: 1.45;
+    }
+
+    .notice h2 { margin: 0 0 0.55rem; font-family: ui-serif, Georgia, serif; }
+    .notice code { color: var(--blue); }
+    .notice .dropzone {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.6rem;
+      place-items: center;
+      border: 1px dashed rgba(255,255,255,0.24);
+      border-radius: 18px;
+      padding: 1rem;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .hidden { display: none !important; }
+
+    .flip-layer {
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      transform-style: preserve-3d;
+      z-index: 20;
+      opacity: 0;
+    }
+
+    .flip-layer.forward {
+      right: 0;
+      transform-origin: left center;
+      animation: flipForward 620ms cubic-bezier(.2,.75,.17,1) forwards;
+    }
+
+    .flip-layer.backward {
+      left: 0;
+      transform-origin: right center;
+      animation: flipBackward 620ms cubic-bezier(.2,.75,.17,1) forwards;
+    }
+
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      backface-visibility: hidden;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+
+    .flip-face.front { border-radius: 0 var(--radius) var(--radius) 0; }
+    .flip-face.back { transform: rotateY(180deg); border-radius: var(--radius) 0 0 var(--radius); }
+
+    @keyframes flipForward {
+      0% { opacity: 1; transform: rotateY(0deg); }
+      100% { opacity: 1; transform: rotateY(-180deg); }
+    }
+
+    @keyframes flipBackward {
+      0% { opacity: 1; transform: rotateY(0deg); }
+      100% { opacity: 1; transform: rotateY(180deg); }
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      justify-content: center;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      flex-wrap: wrap;
+    }
+
+    .progress {
+      min-width: min(340px, 62vw);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--gold);
+    }
+
+    .status {
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 0.88rem;
+      min-width: 180px;
+      text-align: right;
+    }
+
+    .grid-view {
+      position: absolute;
+      inset: 0;
+      overflow: auto;
+      padding: 0.4rem;
+      z-index: 30;
+      background: rgba(8,11,18,0.88);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .thumb {
+      min-height: 210px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.13);
+      background: rgba(255,255,255,0.06);
+      padding: 0.85rem;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 0.65rem;
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+
+    .thumb:hover { transform: translateY(-2px); border-color: rgba(216,179,93,0.55); background: rgba(255,255,255,0.095); }
+    .thumb-image {
+      min-height: 120px;
+      border-radius: 12px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(216,179,93,0.25), transparent 34%),
+        rgba(0,0,0,0.15);
+      display: grid;
+      place-items: center;
+      color: rgba(216,179,93,0.76);
+      font-size: 2rem;
+    }
+    .thumb-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb-title { font-weight: 700; letter-spacing: 0.03em; }
+    .thumb-meta { color: var(--muted); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; font-size: 0.8rem; margin-top: 0.2rem; }
+
+    @media (max-width: 860px) {
+      html, body { overflow: auto; }
+      .app { min-height: 100%; height: auto; }
+      header, footer { align-items: stretch; flex-direction: column; }
+      .toolbar { justify-content: flex-start; }
+      .stage { height: auto; min-height: 68vh; }
+      .book { display: block; height: auto; min-height: 68vh; }
+      .book::after, .page.left { display: none; }
+      .page.right { min-height: 68vh; border-radius: var(--radius); border: 1px solid var(--line); }
+      .card-page { grid-template-columns: 1fr; }
+      .card-art, .placeholder-art { min-height: 230px; max-height: 44vh; }
+      .progress { min-width: 100%; }
+      .status { text-align: left; }
+    }
+
+    @media print {
+      html, body { overflow: visible; background: white; color: black; }
+      .app { display: block; padding: 0; }
+      header, footer, .grid-view, .flip-layer { display: none !important; }
+      main { display: block; perspective: none; }
+      .stage, .book { width: 100%; height: auto; display: block; filter: none; }
+      .book::after { display: none; }
+      .page { display: block !important; height: auto; break-after: page; border: 0; background: white; color: black; }
+      .page.left { display: none !important; }
+      .page-inner { min-height: 100vh; padding: 0.6in; }
+      .card-copy { overflow: visible; }
+      .meaning-block { border-left-color: black; background: transparent; }
+      .meaning-block h3, .card-meta, .folio, .meaning-block p, .meaning-block ul { color: black; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand" aria-label="ORCA Tarot Flipbook">
+        <div class="sigil" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none" role="img">
+            <path d="M10 36c9-19 26-27 43-19-8 1-15 5-18 12 6-4 14-4 21 2-8 1-15 5-21 12-8 9-20 9-25-7Z" fill="rgba(8,11,18,.9)"/>
+            <path d="M19 34c4 6 12 8 19 2" stroke="#f5f1e8" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="43" cy="23" r="2.5" fill="#f5f1e8"/>
+          </svg>
+        </div>
+        <div class="title-stack">
+          <h1>ORCA Tarot Flipbook</h1>
+          <p class="subline" id="subtitle">Loading existing JSON resources…</p>
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Flipbook controls">
+        <label class="field" title="Search by card name, suit, keywords, or meaning">
+          🔎 <input id="search" type="search" placeholder="Search cards" autocomplete="off" />
+        </label>
+        <label class="field" title="Filter by group or suit">
+          Filter
+          <select id="filter">
+            <option value="all">All</option>
+          </select>
+        </label>
+        <button id="gridBtn" type="button">Grid</button>
+        <button id="printBtn" type="button">Print</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="stage" id="stage" aria-live="polite">
+        <div class="notice" id="notice">
+          <h2>Loading deck data</h2>
+          <p>This standalone flipbook tries the project’s existing JSON resources from common root, <code>data/</code>, <code>public/</code>, and <code>src/data/</code> locations.</p>
+          <p>If you open this file directly from disk and the browser blocks local JSON fetches, use the file picker below or run it from your dev server.</p>
+          <div class="dropzone">
+            <strong>Load existing JSON files manually</strong>
+            <input id="fileInput" type="file" accept="application/json,.json" multiple />
+          </div>
+        </div>
+
+        <div class="book hidden" id="book">
+          <article class="page left" id="leftPage"></article>
+          <article class="page right" id="rightPage"></article>
+        </div>
+
+        <div class="grid-view hidden" id="gridView">
+          <div class="grid-cards" id="gridCards"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="nav">
+        <button id="prevBtn" type="button" aria-label="Previous spread">← Previous</button>
+        <button id="nextBtn" type="button" aria-label="Next spread">Next →</button>
+      </div>
+      <label class="progress" aria-label="Page progress">
+        <span id="pageLabel">0 / 0</span>
+        <input id="pageRange" type="range" min="0" max="0" value="0" step="1" />
+      </label>
+      <div class="status" id="status">No cards loaded yet.</div>
+    </footer>
+  </div>
+
+  <script>
+    /*
+      ORCA Tarot standalone flipbook
+      ------------------------------------------------------------
+      Usage:
+      1. Put this file at the project root as flipbook.html.
+      2. Keep your existing JSON files where they already are.
+      3. Optional: pass sources explicitly:
+         flipbook.html?json=data/cards.json,data/majorArcana.json,data/minorArcana.json
+      4. Optional: define before this script in a customized copy:
+         window.ORCA_FLIPBOOK_JSON_SOURCES = ['data/cards.json'];
+    */
+
+    const DEFAULT_JSON_SOURCES = [
+      './cards.json',
+      './deck.json',
+      './tarot.json',
+      './tarot-deck.json',
+      './orca-tarot.json',
+      './orca-tarot-deck.json',
+      './majorArcana.json',
+      './minorArcana.json',
+      './major-arcana.json',
+      './minor-arcana.json',
+      './cardMeanings.json',
+      './meanings.json',
+      './data/cards.json',
+      './data/deck.json',
+      './data/tarot.json',
+      './data/tarot-deck.json',
+      './data/orca-tarot.json',
+      './data/orca-tarot-deck.json',
+      './data/majorArcana.json',
+      './data/minorArcana.json',
+      './data/major-arcana.json',
+      './data/minor-arcana.json',
+      './data/flameCourt.json',
+      './data/foundations.json',
+      './data/voidCourt.json',
+      './data/tides.json',
+      './data/abyss.json',
+      './public/cards.json',
+      './public/deck.json',
+      './public/data/cards.json',
+      './public/data/deck.json',
+      './src/cards.json',
+      './src/data/cards.json',
+      './src/data/deck.json',
+      './src/data/tarotDeck.json',
+      './src/data/tarot-deck.json',
+      './src/data/orcaTarotDeck.json',
+      './src/data/majorArcana.json',
+      './src/data/minorArcana.json',
+      './assets/cards.json',
+      './assets/deck.json'
+    ];
+
+    const state = {
+      allCards: [],
+      filteredCards: [],
+      pages: [],
+      pageIndex: 0,
+      sourcesLoaded: [],
+      sourceErrors: [],
+      gridOpen: false,
+      isAnimating: false
+    };
+
+    const els = {
+      subtitle: document.getElementById('subtitle'),
+      notice: document.getElementById('notice'),
+      book: document.getElementById('book'),
+      leftPage: document.getElementById('leftPage'),
+      rightPage: document.getElementById('rightPage'),
+      prevBtn: document.getElementById('prevBtn'),
+      nextBtn: document.getElementById('nextBtn'),
+      pageRange: document.getElementById('pageRange'),
+      pageLabel: document.getElementById('pageLabel'),
+      status: document.getElementById('status'),
+      search: document.getElementById('search'),
+      filter: document.getElementById('filter'),
+      gridBtn: document.getElementById('gridBtn'),
+      gridView: document.getElementById('gridView'),
+      gridCards: document.getElementById('gridCards'),
+      printBtn: document.getElementById('printBtn'),
+      fileInput: document.getElementById('fileInput'),
+      stage: document.getElementById('stage')
+    };
+
+    function uniqueSources() {
+      const params = new URLSearchParams(location.search);
+      const explicit = params.get('json')
+        ? params.get('json').split(',').map(x => x.trim()).filter(Boolean)
+        : [];
+      const configured = Array.isArray(window.ORCA_FLIPBOOK_JSON_SOURCES)
+        ? window.ORCA_FLIPBOOK_JSON_SOURCES
+        : [];
+      return [...new Set([...explicit, ...configured, ...DEFAULT_JSON_SOURCES])];
+    }
+
+    async function loadJsonSources() {
+      const sources = uniqueSources();
+      const loaded = [];
+
+      await Promise.allSettled(sources.map(async source => {
+        try {
+          const res = await fetch(source, { cache: 'no-store' });
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+          const contentType = res.headers.get('content-type') || '';
+          const text = await res.text();
+          if (!text.trim()) throw new Error('empty file');
+          const data = JSON.parse(text);
+          const cards = normalizeDeck(data, source);
+          if (cards.length) {
+            loaded.push({ source, cards, contentType });
+          } else {
+            state.sourceErrors.push({ source, error: 'No card-like records found' });
+          }
+        } catch (error) {
+          state.sourceErrors.push({ source, error: error.message });
+        }
+      }));
+
+      const cards = loaded.flatMap(x => x.cards);
+      state.sourcesLoaded = loaded.map(x => x.source);
+      if (cards.length) {
+        initializeDeck(cards);
+      } else {
+        showNotice();
+      }
+    }
+
+    function showNotice() {
+      els.notice.classList.remove('hidden');
+      els.book.classList.add('hidden');
+      els.subtitle.textContent = 'No automatic JSON resources found yet.';
+      els.status.textContent = 'Use ?json=path/to/cards.json or the file picker.';
+      els.prevBtn.disabled = true;
+      els.nextBtn.disabled = true;
+    }
+
+    function initializeDeck(cards) {
+      state.allCards = dedupeCards(cards).map((card, index) => ({ ...card, deckIndex: index }));
+      buildFilterOptions();
+      applyFilters();
+      els.notice.classList.add('hidden');
+      els.book.classList.remove('hidden');
+      els.subtitle.textContent = `${state.allCards.length} cards loaded from ${state.sourcesLoaded.length} JSON resource${state.sourcesLoaded.length === 1 ? '' : 's'}.`;
+    }
+
+    function normalizeDeck(data, source, context = {}) {
+      const out = [];
+      const seen = new WeakSet();
+
+      function walk(value, ctx = {}) {
+        if (value == null) return;
+        if (typeof value !== 'object') return;
+        if (seen.has(value)) return;
+        seen.add(value);
+
+        if (Array.isArray(value)) {
+          if (value.every(item => item && typeof item === 'object') && value.some(looksLikeCard)) {
+            value.forEach((item, index) => {
+              if (looksLikeCard(item)) out.push(normalizeCard(item, { ...context, ...ctx, source, arrayIndex: index }));
+              else walk(item, { ...ctx, arrayIndex: index });
+            });
+            return;
+          }
+          value.forEach((item, index) => walk(item, { ...ctx, arrayIndex: index }));
+          return;
+        }
+
+        if (looksLikeCard(value)) {
+          out.push(normalizeCard(value, { ...context, ...ctx, source }));
+          return;
+        }
+
+        for (const [key, child] of Object.entries(value)) {
+          const nextCtx = inferContext(key, child, ctx);
+          walk(child, nextCtx);
+        }
+      }
+
+      walk(data, context);
+      return out.filter(card => card.title && card.title !== 'Untitled Card');
+    }
+
+    function inferContext(key, child, ctx) {
+      const lower = key.toLowerCase();
+      const next = { ...ctx };
+      if (/major/.test(lower)) next.arcana = 'Major Arcana';
+      if (/minor/.test(lower)) next.arcana = 'Minor Arcana';
+      if (/court/.test(lower)) next.type = 'Court';
+      if (/flame|fire|wands/.test(lower)) next.suit = 'Flame';
+      if (/tide|water|cups/.test(lower)) next.suit = 'Tide';
+      if (/stone|earth|pentacle|coin/.test(lower)) next.suit = 'Stone';
+      if (/wind|air|sword/.test(lower)) next.suit = 'Wind';
+      if (/void|abyss|shadow/.test(lower)) next.suit = key.replace(/[-_]/g, ' ');
+      if (Array.isArray(child) && !next.group) next.group = titleCase(key.replace(/[-_]/g, ' '));
+      return next;
+    }
+
+    function looksLikeCard(item) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+      const keys = Object.keys(item).map(k => k.toLowerCase());
+      const hasName = keys.some(k => ['name','title','card','cardname','label','archetype'].includes(k));
+      const hasMeaning = keys.some(k => k.includes('meaning') || k.includes('upright') || k.includes('reversed') || k.includes('shadow') || k.includes('keyword') || k.includes('description') || k.includes('summary'));
+      const hasCardSignals = keys.some(k => ['suit','arcana','number','rank','image','imageurl','image_url','img','keywords'].includes(k));
+      return hasName && (hasMeaning || hasCardSignals);
+    }
+
+    function normalizeCard(raw, ctx) {
+      const get = (...names) => {
+        for (const name of names) {
+          const found = Object.keys(raw).find(k => k.toLowerCase() === name.toLowerCase());
+          if (found && raw[found] != null && raw[found] !== '') return raw[found];
+        }
+        return undefined;
+      };
+
+      const meanings = get('meanings') || get('meaning') || {};
+      const upright = firstText(
+        get('upright'), get('uprightMeaning'), get('upright_meaning'), get('light'), get('lightMeaning'),
+        meanings && (meanings.upright || meanings.light || meanings.primary || meanings.meaning),
+        raw.interpretation && (raw.interpretation.upright || raw.interpretation.light),
+        typeof meanings === 'string' ? meanings : undefined
+      );
+      const reversed = firstText(
+        get('reversed'), get('reversedMeaning'), get('reversed_meaning'), get('shadow'), get('shadowMeaning'),
+        meanings && (meanings.reversed || meanings.shadow || meanings.challenge),
+        raw.interpretation && (raw.interpretation.reversed || raw.interpretation.shadow)
+      );
+      const description = firstText(get('description'), get('summary'), get('lore'), get('story'), get('notes'), raw.content);
+      const keywords = normalizeList(get('keywords') || get('keyword') || get('tags') || (meanings && meanings.keywords));
+      const title = firstText(get('name'), get('title'), get('cardName'), get('card'), get('label'), get('archetype')) || 'Untitled Card';
+      const suit = firstText(get('suit'), get('element'), ctx.suit);
+      const arcana = firstText(get('arcana'), get('type'), ctx.arcana, ctx.group);
+      const rank = firstText(get('rank'), get('number'), get('num'), get('index'), raw.id);
+      const image = firstText(get('image'), get('imageUrl'), get('image_url'), get('img'), get('art'), get('src'), get('thumbnail'));
+      const subtitle = [rank, suit, arcana].filter(Boolean).join(' • ');
+
+      return {
+        title: cleanText(title),
+        subtitle: cleanText(subtitle),
+        suit: cleanText(suit || arcana || ctx.group || 'Deck'),
+        arcana: cleanText(arcana || ''),
+        rank: cleanText(rank || ''),
+        keywords,
+        upright: cleanText(upright || description || 'Meaning not provided in the loaded JSON.'),
+        reversed: cleanText(reversed || ''),
+        description: cleanText(description || ''),
+        image: image ? String(image) : '',
+        source: ctx.source || 'manual JSON',
+        raw
+      };
+    }
+
+    function firstText(...values) {
+      for (const value of values) {
+        if (value == null || value === '') continue;
+        if (Array.isArray(value)) return value.map(stringifyMeaning).filter(Boolean).join('; ');
+        if (typeof value === 'object') return objectToText(value);
+        return String(value);
+      }
+      return '';
+    }
+
+    function stringifyMeaning(value) {
+      if (value == null) return '';
+      if (typeof value === 'string' || typeof value === 'number') return String(value);
+      if (Array.isArray(value)) return value.map(stringifyMeaning).join('; ');
+      if (typeof value === 'object') return objectToText(value);
+      return String(value);
+    }
+
+    function objectToText(obj) {
+      if (!obj || typeof obj !== 'object') return '';
+      return Object.entries(obj)
+        .filter(([, value]) => value != null && value !== '')
+        .map(([key, value]) => `${titleCase(key.replace(/[-_]/g, ' '))}: ${stringifyMeaning(value)}`)
+        .join('; ');
+    }
+
+    function normalizeList(value) {
+      if (value == null || value === '') return [];
+      if (Array.isArray(value)) return value.flatMap(normalizeList).filter(Boolean);
+      if (typeof value === 'object') return Object.values(value).flatMap(normalizeList).filter(Boolean);
+      return String(value).split(/[,;|]/).map(x => cleanText(x)).filter(Boolean).slice(0, 12);
+    }
+
+    function cleanText(value) {
+      return String(value ?? '')
+        .replace(/\s+/g, ' ')
+        .replace(/\s+([,.;:!?])/g, '$1')
+        .trim();
+    }
+
+    function titleCase(value) {
+      return String(value || '')
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim();
+    }
+
+    function dedupeCards(cards) {
+      const map = new Map();
+      for (const card of cards) {
+        const key = [card.title, card.suit, card.rank].map(x => String(x || '').toLowerCase()).join('|');
+        if (!map.has(key)) map.set(key, card);
+        else {
+          const existing = map.get(key);
+          map.set(key, mergeCard(existing, card));
+        }
+      }
+      return [...map.values()];
+    }
+
+    function mergeCard(a, b) {
+      return {
+        ...a,
+        ...Object.fromEntries(Object.entries(b).filter(([, value]) => value && !(Array.isArray(value) && !value.length))),
+        keywords: [...new Set([...(a.keywords || []), ...(b.keywords || [])])],
+        source: [...new Set([a.source, b.source].filter(Boolean))].join(', '),
+        raw: a.raw || b.raw
+      };
+    }
+
+    function buildFilterOptions() {
+      const groups = [...new Set(state.allCards.map(c => c.suit || c.arcana || 'Deck').filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b));
+      els.filter.innerHTML = '<option value="all">All</option>' + groups.map(group => `<option value="${escapeAttr(group)}">${escapeHtml(group)}</option>`).join('');
+    }
+
+    function applyFilters() {
+      const q = els.search.value.trim().toLowerCase();
+      const filter = els.filter.value;
+      state.filteredCards = state.allCards.filter(card => {
+        const haystack = [
+          card.title, card.subtitle, card.suit, card.arcana, card.rank,
+          card.upright, card.reversed, card.description, ...(card.keywords || [])
+        ].join(' ').toLowerCase();
+        const matchesSearch = !q || haystack.includes(q);
+        const matchesFilter = filter === 'all' || card.suit === filter || card.arcana === filter;
+        return matchesSearch && matchesFilter;
+      });
+      state.pages = buildPages(state.filteredCards);
+      state.pageIndex = Math.min(state.pageIndex, Math.max(0, state.pages.length - 1));
+      renderCurrentSpread();
+      renderGrid();
+    }
+
+    function buildPages(cards) {
+      const intro = {
+        kind: 'intro',
+        title: 'The ORCA Tarot',
+        body: cards.length
+          ? `A living flipbook of ${cards.length} loaded cards and meanings.`
+          : 'No cards match the current search.'
+      };
+      return [intro, ...cards.map(card => ({ kind: 'card', card }))];
+    }
+
+    function renderCurrentSpread(direction) {
+      const left = state.pages[state.pageIndex] || emptyPage();
+      const right = state.pages[state.pageIndex + 1] || emptyPage();
+
+      if (direction && !window.matchMedia('(max-width: 860px)').matches) {
+        animateFlip(direction, left, right);
+      }
+
+      els.leftPage.innerHTML = renderPage(left, state.pageIndex, 'left');
+      els.rightPage.innerHTML = renderPage(right, state.pageIndex + 1, 'right');
+
+      const maxIndex = Math.max(0, state.pages.length - 1);
+      els.pageRange.max = String(maxIndex);
+      els.pageRange.value = String(state.pageIndex);
+      els.pageLabel.textContent = `${Math.min(state.pageIndex + 1, state.pages.length)} / ${state.pages.length}`;
+      els.prevBtn.disabled = state.pageIndex <= 0;
+      els.nextBtn.disabled = state.pageIndex >= state.pages.length - 2;
+      els.status.textContent = `${state.filteredCards.length} card${state.filteredCards.length === 1 ? '' : 's'} shown`;
+    }
+
+    function emptyPage() {
+      return { kind: 'empty', title: 'End of Deck' };
+    }
+
+    function renderPage(page, index, side) {
+      if (!page || page.kind === 'empty') {
+        return `<div class="page-inner"><div class="folio"><span>${side}</span><span></span></div><div class="intro-page"><h2>✦</h2><p>End of deck.</p></div><div class="folio"><span></span><span>${index + 1}</span></div></div>`;
+      }
+
+      if (page.kind === 'intro') {
+        const sources = state.sourcesLoaded.length
+          ? `<ul class="source-list">${state.sourcesLoaded.map(source => `<li>${escapeHtml(source)}</li>`).join('')}</ul>`
+          : '';
+        return `<div class="page-inner">
+          <div class="folio"><span>ORCA TAROT</span><span>Flipbook</span></div>
+          <div class="intro-page">
+            <h2>${escapeHtml(page.title)}</h2>
+            <p>${escapeHtml(page.body)}</p>
+            <p>Use arrow keys, the range slider, search, filter, or grid view to move through the deck.</p>
+            ${sources}
+          </div>
+          <div class="folio"><span>Standalone HTML</span><span>${index + 1}</span></div>
+        </div>`;
+      }
+
+      const card = page.card;
+      return `<div class="page-inner">
+        <div class="folio"><span>${escapeHtml(card.suit || card.arcana || 'Card')}</span><span>${escapeHtml(card.rank || '')}</span></div>
+        <div class="card-page">
+          <div class="art-wrap">${renderArt(card)}</div>
+          <div class="card-copy">
+            <h2 class="card-title">${escapeHtml(card.title)}</h2>
+            <div class="card-meta">
+              ${card.subtitle ? `<span class="pill">${escapeHtml(card.subtitle)}</span>` : ''}
+              ${card.source ? `<span class="pill">JSON: ${escapeHtml(shortSource(card.source))}</span>` : ''}
+            </div>
+            ${card.keywords && card.keywords.length ? meaningBlock('Keywords', card.keywords, true) : ''}
+            ${card.description ? meaningBlock('Lore', card.description) : ''}
+            ${meaningBlock('Meaning', card.upright)}
+            ${card.reversed ? meaningBlock('Shadow / Reversal', card.reversed) : ''}
+          </div>
+        </div>
+        <div class="folio"><span>${escapeHtml(card.title)}</span><span>${index + 1}</span></div>
+      </div>`;
+    }
+
+    function renderArt(card) {
+      if (card.image) {
+        const src = escapeAttr(card.image);
+        return `<img class="card-art" src="${src}" alt="${escapeAttr(card.title)}" onerror="this.replaceWith(window.__orcaPlaceholder('${escapeAttr(card.title)}'))" />`;
+      }
+      return `<div class="placeholder-art"><div class="placeholder-text">${escapeHtml(card.title)}</div></div>`;
+    }
+
+    window.__orcaPlaceholder = function(title) {
+      const div = document.createElement('div');
+      div.className = 'placeholder-art';
+      div.innerHTML = `<div class="placeholder-text">${escapeHtml(title || 'Card')}</div>`;
+      return div;
+    };
+
+    function meaningBlock(title, content, asList = false) {
+      const body = Array.isArray(content)
+        ? `<ul>${content.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+        : `<p>${escapeHtml(content || '')}</p>`;
+      return `<section class="meaning-block"><h3>${escapeHtml(title)}</h3>${body}</section>`;
+    }
+
+    function shortSource(source) {
+      return String(source).split('/').slice(-2).join('/');
+    }
+
+    function animateFlip(direction, left, right) {
+      if (state.isAnimating) return;
+      state.isAnimating = true;
+      const layer = document.createElement('div');
+      layer.className = `flip-layer ${direction === 'next' ? 'forward' : 'backward'}`;
+      layer.innerHTML = `
+        <div class="flip-face front">${renderPage(direction === 'next' ? right : left, direction === 'next' ? state.pageIndex + 1 : state.pageIndex, 'flip')}</div>
+        <div class="flip-face back">${renderPage(direction === 'next' ? left : right, direction === 'next' ? state.pageIndex : state.pageIndex + 1, 'flip')}</div>
+      `;
+      els.book.appendChild(layer);
+      window.setTimeout(() => {
+        layer.remove();
+        state.isAnimating = false;
+      }, 650);
+    }
+
+    function nextSpread() {
+      if (state.pageIndex < state.pages.length - 2) {
+        state.pageIndex = Math.min(state.pageIndex + 2, Math.max(0, state.pages.length - 1));
+        renderCurrentSpread('next');
+      }
+    }
+
+    function prevSpread() {
+      if (state.pageIndex > 0) {
+        state.pageIndex = Math.max(0, state.pageIndex - 2);
+        renderCurrentSpread('prev');
+      }
+    }
+
+    function goToPage(index) {
+      const next = Math.max(0, Math.min(Number(index) || 0, Math.max(0, state.pages.length - 1)));
+      state.pageIndex = next % 2 === 0 ? next : next - 1;
+      renderCurrentSpread();
+    }
+
+    function renderGrid() {
+      if (!state.filteredCards.length) {
+        els.gridCards.innerHTML = '<div class="notice"><h2>No matching cards</h2><p>Clear search or change the filter.</p></div>';
+        return;
+      }
+      els.gridCards.innerHTML = state.filteredCards.map((card, i) => `
+        <button class="thumb" type="button" data-index="${i}" aria-label="Open ${escapeAttr(card.title)}">
+          <div class="thumb-image">${card.image ? `<img src="${escapeAttr(card.image)}" alt="" loading="lazy" onerror="this.remove();" />` : '✦'}</div>
+          <div>
+            <div class="thumb-title">${escapeHtml(card.title)}</div>
+            <div class="thumb-meta">${escapeHtml(card.subtitle || card.suit || card.arcana || '')}</div>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    function toggleGrid(force) {
+      state.gridOpen = typeof force === 'boolean' ? force : !state.gridOpen;
+      els.gridView.classList.toggle('hidden', !state.gridOpen);
+      els.gridBtn.textContent = state.gridOpen ? 'Book' : 'Grid';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, '&#96;');
+    }
+
+    async function loadManualFiles(files) {
+      const all = [];
+      for (const file of files) {
+        try {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          all.push(...normalizeDeck(data, file.name));
+          state.sourcesLoaded.push(file.name);
+        } catch (error) {
+          console.error(`Could not read ${file.name}`, error);
+        }
+      }
+      if (all.length) initializeDeck(all);
+      else showNotice();
+    }
+
+    els.prevBtn.addEventListener('click', prevSpread);
+    els.nextBtn.addEventListener('click', nextSpread);
+    els.pageRange.addEventListener('input', event => goToPage(event.target.value));
+    els.search.addEventListener('input', applyFilters);
+    els.filter.addEventListener('change', applyFilters);
+    els.gridBtn.addEventListener('click', () => toggleGrid());
+    els.printBtn.addEventListener('click', () => window.print());
+    els.fileInput.addEventListener('change', event => loadManualFiles(event.target.files));
+    els.gridCards.addEventListener('click', event => {
+      const btn = event.target.closest('[data-index]');
+      if (!btn) return;
+      const cardIndex = Number(btn.dataset.index);
+      goToPage(cardIndex + 1);
+      toggleGrid(false);
+    });
+
+    window.addEventListener('keydown', event => {
+      if (event.target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName)) return;
+      if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
+        event.preventDefault();
+        nextSpread();
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+        event.preventDefault();
+        prevSpread();
+      }
+      if (event.key.toLowerCase() === 'g') toggleGrid();
+      if (event.key === 'Escape') toggleGrid(false);
+    });
+
+    loadJsonSources();
+  </script>
+</body>
+</html>
