@@ -4,10 +4,14 @@ import {
   BookOpen,
   ChevronDown,
   Copy,
+  ExternalLink,
   Eye,
   Flame,
   Headphones,
   Mic2,
+  X,
+  ZoomIn,
+  ZoomOut,
   Radio,
   RotateCcw,
   Scissors,
@@ -423,12 +427,26 @@ function ReadingBoard({ spread, cards, selectedId, setSelectedId }) {
 }
 
 function DetailPanel({ card, onNarrateCard, onStopVoice, speechAvailable }) {
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  useEffect(() => {
+    setZoomOpen(false);
+    setZoomLevel(1);
+  }, [card?.id]);
+
   if (!card) return null;
   const meaning = card.reversedDraw ? card.reversed : card.meaning;
+  const imageTransform = `scale(${zoomLevel}) ${card.reversedDraw ? "rotate(180deg)" : ""}`;
 
   return (
     <div className="detail-grid">
-      <TarotCard card={card} selected compact={false} />
+      <div className="detail-card-stack">
+        <TarotCard card={card} selected compact={false} onClick={() => setZoomOpen(true)} />
+        <button className="zoom-card-button" type="button" onClick={() => setZoomOpen(true)}>
+          <ZoomIn size={16} /> Zoom Detail Card
+        </button>
+      </div>
       <section className="detail-panel">
         <div className="eyebrow">{card.suit} · {card.type} · {card.reversedDraw ? "REVERSED" : "UPRIGHT"}</div>
         <h2>{card.name}</h2>
@@ -454,9 +472,69 @@ function DetailPanel({ card, onNarrateCard, onStopVoice, speechAvailable }) {
           <button type="button" onClick={onStopVoice} disabled={!speechAvailable}>
             <VolumeX size={16} /> Stop Voice
           </button>
+          <button type="button" onClick={() => setZoomOpen(true)}>
+            <ZoomIn size={16} /> Zoom Card
+          </button>
         </div>
         <code className="path-line">{card.image || "Image missing — fallback art active."}</code>
       </section>
+
+      <AnimatePresence>
+        {zoomOpen && (
+          <motion.div
+            className="zoom-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${card.name} zoom view`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setZoomOpen(false)}
+          >
+            <motion.div
+              className="zoom-modal"
+              initial={{ scale: 0.94, y: 18 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.94, y: 18 }}
+              transition={{ duration: 0.18 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="zoom-header">
+                <div>
+                  <strong>{card.name}</strong>
+                  <span>{card.suit} · {card.reversedDraw ? "Reversed" : "Upright"}</span>
+                </div>
+                <div className="zoom-controls">
+                  <button type="button" onClick={() => setZoomLevel((value) => Math.max(0.8, Number((value - 0.2).toFixed(2))))}>
+                    <ZoomOut size={16} />
+                  </button>
+                  <span>{Math.round(zoomLevel * 100)}%</span>
+                  <button type="button" onClick={() => setZoomLevel((value) => Math.min(3, Number((value + 0.2).toFixed(2))))}>
+                    <ZoomIn size={16} />
+                  </button>
+                  <button type="button" onClick={() => setZoomLevel(1)}>Reset</button>
+                  <button type="button" className="zoom-close" onClick={() => setZoomOpen(false)}>
+                    <X size={17} />
+                  </button>
+                </div>
+              </div>
+              <div className="zoom-stage">
+                {card.image ? (
+                  <img
+                    className="zoom-card-image"
+                    src={card.image}
+                    alt={card.name}
+                    style={{ transform: imageTransform }}
+                  />
+                ) : (
+                  <div className="zoom-fallback"><CardArt card={card} /></div>
+                )}
+              </div>
+              <p className="zoom-hint">Use the + / − controls. On mobile, you can scroll inside this panel while zoomed.</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -484,6 +562,7 @@ export default function App() {
   const [autoNarrateCards, setAutoNarrateCards] = useState(false);
   const [autoNarrateReading, setAutoNarrateReading] = useState(false);
   const [voiceRate, setVoiceRate] = useState(0.88);
+  const [audioDockCollapsed, setAudioDockCollapsed] = useState(false);
 
   const spread = SPREADS[spreadId] || SPREADS.three_timeline;
   const baseDeck = useMemo(
@@ -495,49 +574,80 @@ export default function App() {
   const selectedCard = drawnCards.find((card) => card.id === selectedId) || drawnCards[0] || null;
   const busy = stage !== "idle";
   const speechAvailable = typeof window !== "undefined" && "speechSynthesis" in window;
+  const flipbookUrl = typeof window !== "undefined" ? new URL("flipbook.html", window.location.href).href : "flipbook.html";
 
-  function ensureAudioEngine() {
+  function getAudioEngine() {
     if (!audioEngineRef.current) audioEngineRef.current = createRitualAudioEngine();
     const engine = audioEngineRef.current;
     if (!engine) {
       setPhaseMessage("This browser does not support Web Audio.");
       return null;
     }
-    engine.resume?.();
+    return engine;
+  }
+
+  async function ensureAudioEngineAsync() {
+    const engine = getAudioEngine();
+    if (!engine) return null;
+    try {
+      await engine.resume?.();
+    } catch {
+      setPhaseMessage("Audio unlock was blocked. Tap Enable Audio again.");
+      return null;
+    }
+    return engine;
+  }
+
+  async function enableAudioFromGesture({ announce = true } = {}) {
+    const engine = await ensureAudioEngineAsync();
+    if (!engine) return null;
+    engine.setMasterVolume?.(0.34);
+    setAudioEnabled(true);
+
+    if (announce) {
+      engine.pulse?.("select");
+      if (speechAvailable) {
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance("Audio enabled.");
+          utterance.rate = voiceRate;
+          utterance.pitch = 0.86;
+          utterance.volume = 0.92;
+          window.speechSynthesis.speak(utterance);
+        } catch {}
+      }
+    }
+
+    setPhaseMessage("Audio unlocked. Atmosphere, ritual cues, and voice narration are ready.");
     return engine;
   }
 
   function playAudioCue(kind) {
     if (!audioEnabled) return;
-    const engine = ensureAudioEngine();
-    engine?.pulse(kind);
+    ensureAudioEngineAsync().then((engine) => engine?.pulse(kind));
   }
 
-  function toggleAudio() {
+  async function toggleAudio() {
     if (audioEnabled) {
       audioEngineRef.current?.stopAtmosphere?.();
       setAtmosphereOn(false);
+      stopVoice();
       setAudioEnabled(false);
       setPhaseMessage("Audio disabled.");
       return;
     }
-    const engine = ensureAudioEngine();
-    if (!engine) return;
-    engine.setMasterVolume?.(0.34);
-    setAudioEnabled(true);
-    setPhaseMessage("Audio enabled. Atmosphere, ritual cues, and voice controls are ready.");
+    await enableAudioFromGesture({ announce: true });
   }
 
-  function toggleAtmosphere() {
-    const engine = ensureAudioEngine();
+  async function toggleAtmosphere() {
+    const engine = await enableAudioFromGesture({ announce: false });
     if (!engine) return;
-    setAudioEnabled(true);
     if (atmosphereOn) {
       engine.stopAtmosphere();
       setAtmosphereOn(false);
       setPhaseMessage("Atmospheric background sound paused.");
     } else {
-      engine.startAtmosphere(atmosphereLevel);
+      await engine.startAtmosphere(atmosphereLevel);
       setAtmosphereOn(true);
       setPhaseMessage("Atmospheric background sound engaged.");
     }
@@ -575,9 +685,16 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices?.();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices?.();
+    }
     return () => {
       audioEngineRef.current?.dispose?.();
-      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.onvoiceschanged = null;
+      }
     };
   }, []);
 
@@ -679,8 +796,106 @@ export default function App() {
     setPhaseMessage("Interpretation copied to clipboard.");
   }
 
+  function openFlipbook(event) {
+    event?.preventDefault?.();
+    window.open(flipbookUrl, "_blank", "noopener,noreferrer");
+  }
+
+
+  function renderAlwaysVisibleAudioDock() {
+    return (
+      <aside className={`audio-unlock-dock ${audioDockCollapsed ? "collapsed" : ""}`} aria-label="Mobile-first audio controls">
+        <div className="audio-dock-head">
+          <strong><Headphones size={17} /> AUDIO</strong>
+          <button type="button" onClick={() => setAudioDockCollapsed((value) => !value)} aria-expanded={!audioDockCollapsed}>
+            {audioDockCollapsed ? "Open" : "Hide"}
+          </button>
+        </div>
+        {!audioDockCollapsed && (
+          <>
+            <button type="button" className={`unlock-audio-button ${audioEnabled ? "on" : ""}`} onClick={toggleAudio}>
+              {audioEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
+              {audioEnabled ? "Audio Enabled" : "Enable Audio / Unlock Sound"}
+            </button>
+            <div className="audio-dock-grid">
+              <button type="button" className={atmosphereOn ? "on" : ""} onClick={toggleAtmosphere}><Radio size={15} /> Atmosphere</button>
+              <button type="button" className={voiceEnabled ? "on" : ""} onClick={() => setVoiceEnabled((value) => !value)}><Mic2 size={15} /> Voice</button>
+              <button type="button" className={autoNarrateCards ? "on" : ""} onClick={() => setAutoNarrateCards((value) => !value)}>Auto Cards</button>
+              <button type="button" className={autoNarrateReading ? "on" : ""} onClick={() => setAutoNarrateReading((value) => !value)}>Auto Reading</button>
+              <button type="button" onClick={() => narrateCard(selectedCard)} disabled={!speechAvailable || !voiceEnabled || !selectedCard}><Mic2 size={15} /> Say Card</button>
+              <button type="button" onClick={() => narrateReading(reading)} disabled={!speechAvailable || !voiceEnabled || !reading}><BookOpen size={15} /> Say Reading</button>
+              <button type="button" onClick={stopVoice} disabled={!speechAvailable}><VolumeX size={15} /> Stop</button>
+              <button type="button" onClick={openFlipbook}><BookOpen size={15} /> Flipbook</button>
+            </div>
+            <div className="audio-dock-sliders">
+              <label>
+                Atmosphere
+                <input aria-label="Atmosphere volume" type="range" min="0" max="0.55" step="0.01" value={atmosphereLevel} onChange={(event) => updateAtmosphereLevel(event.target.value)} disabled={!audioEnabled} />
+              </label>
+              <label>
+                Voice Rate
+                <input aria-label="Voice narration speed" type="range" min="0.65" max="1.15" step="0.01" value={voiceRate} onChange={(event) => setVoiceRate(Number(event.target.value))} disabled={!speechAvailable} />
+              </label>
+            </div>
+            <p>Mobile Chrome fix: tap Enable Audio first. This resumes Web Audio and primes speech narration from a real user gesture.</p>
+          </>
+        )}
+      </aside>
+    );
+  }
+
+  function renderAudioControls(compact = false) {
+    return (
+      <div className={compact ? "audio-panel top-audio-panel" : "audio-panel"}>
+        <div className="audio-title"><Headphones size={17} /> Audio Controls</div>
+        <div className="toggle-group audio-toggles">
+          <button className={`toggle ${audioEnabled ? "on" : ""}`} onClick={toggleAudio} type="button">
+            {audioEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />} {audioEnabled ? "Audio On" : "Enable Audio"}
+          </button>
+          <button className={`toggle ${atmosphereOn ? "on" : ""}`} onClick={toggleAtmosphere} type="button"><Radio size={15} /> Atmosphere</button>
+          <button className={`toggle ${voiceEnabled ? "on" : ""}`} onClick={() => setVoiceEnabled((v) => !v)} type="button"><Mic2 size={15} /> Voice</button>
+          <button className={`toggle ${autoNarrateCards ? "on" : ""}`} onClick={() => setAutoNarrateCards((v) => !v)} type="button">Auto Cards</button>
+          <button className={`toggle ${autoNarrateReading ? "on" : ""}`} onClick={() => setAutoNarrateReading((v) => !v)} type="button">Auto Reading</button>
+        </div>
+        <div className="audio-slider-grid">
+          <div className="audio-slider">
+            <span>Atmosphere</span>
+            <input
+              aria-label="Atmosphere volume"
+              type="range"
+              min="0"
+              max="0.55"
+              step="0.01"
+              value={atmosphereLevel}
+              onChange={(event) => updateAtmosphereLevel(event.target.value)}
+              disabled={!audioEnabled}
+            />
+          </div>
+          <div className="audio-slider">
+            <span>Voice Rate</span>
+            <input
+              aria-label="Voice narration speed"
+              type="range"
+              min="0.65"
+              max="1.15"
+              step="0.01"
+              value={voiceRate}
+              onChange={(event) => setVoiceRate(Number(event.target.value))}
+              disabled={!speechAvailable}
+            />
+          </div>
+        </div>
+        <p className="audio-note">
+          Use Enable Audio first. Atmosphere and ritual cues are local Web Audio. Narration uses the browser speech voice.
+          {!speechAvailable ? " Browser voice narration is not available here." : ""}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <main className="app-shell">
+      {renderAlwaysVisibleAudioDock()}
       <section className="hero">
         <div>
           <div className="eyebrow"><Waves size={15} /> ORCA AI TAROT READER</div>
@@ -689,12 +904,19 @@ export default function App() {
             A deployable ORCA tarot reader with animated shuffling, animated deck cutting, atmospheric audio, ritual cues, spoken card narration, and vocal interpretation.
           </p>
         </div>
-        <div className="stats-panel">
-          <div><strong>{stats.total}</strong><span>cards</span></div>
-          <div><strong>{stats.mapped}</strong><span>mapped art</span></div>
-          <div><strong>{spread.positions.length}</strong><span>spread slots</span></div>
+        <div className="hero-side">
+          <div className="stats-panel">
+            <div><strong>{stats.total}</strong><span>cards</span></div>
+            <div><strong>{stats.mapped}</strong><span>mapped art</span></div>
+            <div><strong>{spread.positions.length}</strong><span>spread slots</span></div>
+          </div>
+          <a className="flipbook-launch" href={flipbookUrl} target="_blank" rel="noreferrer" onClick={openFlipbook}>
+            <BookOpen size={17} /> Open Deck Flipbook <ExternalLink size={15} />
+          </a>
         </div>
       </section>
+
+      {renderAudioControls(true)}
 
       <section className="main-grid">
         <aside className="control-panel">
@@ -729,45 +951,7 @@ export default function App() {
             <button className={`toggle ${includeMissingImages ? "on" : ""}`} onClick={() => setIncludeMissingImages((v) => !v)} type="button">Fallback Art</button>
           </div>
 
-          <div className="audio-panel">
-            <div className="audio-title"><Headphones size={17} /> Audio Ritual</div>
-            <div className="toggle-group audio-toggles">
-              <button className={`toggle ${audioEnabled ? "on" : ""}`} onClick={toggleAudio} type="button">
-                {audioEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />} {audioEnabled ? "Audio On" : "Enable Audio"}
-              </button>
-              <button className={`toggle ${atmosphereOn ? "on" : ""}`} onClick={toggleAtmosphere} type="button"><Radio size={15} /> Atmosphere</button>
-              <button className={`toggle ${voiceEnabled ? "on" : ""}`} onClick={() => setVoiceEnabled((v) => !v)} type="button"><Mic2 size={15} /> Voice</button>
-              <button className={`toggle ${autoNarrateCards ? "on" : ""}`} onClick={() => setAutoNarrateCards((v) => !v)} type="button">Auto Cards</button>
-              <button className={`toggle ${autoNarrateReading ? "on" : ""}`} onClick={() => setAutoNarrateReading((v) => !v)} type="button">Auto Reading</button>
-            </div>
-            <div className="audio-slider">
-              <span>Atmosphere</span>
-              <input
-                aria-label="Atmosphere volume"
-                type="range"
-                min="0"
-                max="0.55"
-                step="0.01"
-                value={atmosphereLevel}
-                onChange={(event) => updateAtmosphereLevel(event.target.value)}
-                disabled={!audioEnabled}
-              />
-            </div>
-            <div className="audio-slider">
-              <span>Voice Rate</span>
-              <input
-                aria-label="Voice narration speed"
-                type="range"
-                min="0.65"
-                max="1.15"
-                step="0.01"
-                value={voiceRate}
-                onChange={(event) => setVoiceRate(Number(event.target.value))}
-                disabled={!speechAvailable}
-              />
-            </div>
-            <p className="audio-note">Atmosphere and ritual cues are generated locally with Web Audio. Narration uses the browser speech voice.</p>
-          </div>
+          {renderAudioControls()}
 
           <button className="draw-button" type="button" disabled={busy || !validation.ok} onClick={drawReading}>
             <Sparkles size={18} /> Shuffle + Cut + Draw
@@ -780,6 +964,9 @@ export default function App() {
             <button type="button" onClick={resetReading} disabled={busy}><RotateCcw size={16} /> Reset</button>
             <button type="button" onClick={copyReading} disabled={!reading?.exportText}><Copy size={16} /> Copy</button>
           </div>
+          <button className="flipbook-panel-button" type="button" onClick={openFlipbook}>
+            <BookOpen size={16} /> Launch Deck Flipbook <ExternalLink size={14} />
+          </button>
 
           {!validation.ok && (
             <div className="missing-box">
