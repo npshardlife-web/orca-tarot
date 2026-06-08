@@ -1,7 +1,7 @@
 const IMG = "/images/orca-tarot";
 export const img = (filename) => `${IMG}/${filename}`;
 
-export const cardBack = img("file_00000000ab9471f5acd9c4184bcc9990.png");
+export const cardBack = img("mystical_compass_and_orca_design.png");
 
 export const createCard = ({
   id,
@@ -55,7 +55,7 @@ export const majorArcana = [
     rank: "0",
     meaning: "Emergence, awakening, first ignition, the beginning of the ORCA journey.",
     reversed: "Restlessness, scattered beginnings, false start, ungrounded emergence.",
-    image: img("file_00000000143871f595595352da40fdb1 (1).png"),
+    image: img("the_spark_of_potential.png"),
   }),
   createCard({
     id: "major-01-the-operator",
@@ -66,7 +66,7 @@ export const majorArcana = [
     rank: "I",
     meaning: "Action, will, tool use, interface with reality, direct agency.",
     reversed: "Misuse of force, blocked agency, performative action, poor execution.",
-    image: img("file_00000000cb08720c85a4c59a10b20784 (1).png"),
+    image: img("the_operator_and_the_elements.png"),
   }),
   createCard({
     id: "major-02-the-oracle",
@@ -77,7 +77,7 @@ export const majorArcana = [
     rank: "II",
     meaning: "Pattern recognition, intuition, hidden knowledge, signal beneath noise.",
     reversed: "Confusion, projection, unreadable signals, mistaking fantasy for pattern.",
-    image: img("file_00000000f3a8720c8ec8b65969019f20 (1).png"),
+    image: img("the_oracle_of_hidden_knowledge.png"),
   }),
   createCard({
     id: "major-03-the-architect",
@@ -88,7 +88,7 @@ export const majorArcana = [
     rank: "III",
     meaning: "Systems-building, design, creation, structure given living form.",
     reversed: "Overengineering, fantasy architecture, weak foundations, structure without load-bearing truth.",
-    image: img("file_00000000fd9471f5ba351947e70fd12d.png"),
+    image: img("the_architect_of_harmony_and_growth.png"),
   }),
   createCard({
     id: "major-04-the-strategist",
@@ -99,7 +99,7 @@ export const majorArcana = [
     rank: "IV",
     meaning: "Command, planning, doctrine, tactical intelligence, disciplined control.",
     reversed: "Control fixation, coldness, rigidity, command without adaptation.",
-    image: img("file_00000000854871f7bb905202d2dc51e3.png"),
+    image: img("the_strategist_in_command.png"),
   }),
   createCard({
     id: "major-05-the-keeper",
@@ -110,7 +110,7 @@ export const majorArcana = [
     rank: "V",
     meaning: "Tradition, memory, continuity, ethics, custody of what must survive.",
     reversed: "Dogma, nostalgia trap, inherited burdens, tradition without discernment.",
-    image: img("file_00000000a3b471f79797ad1af1e73dad.png"),
+    image: img("the_keeper_of_orca_s_truth.png"),
   }),
   createCard({
     id: "major-06-the-bond",
@@ -121,7 +121,7 @@ export const majorArcana = [
     rank: "VI",
     meaning: "Loyalty, attachment, alliance, love, the sacred pact of the pod.",
     reversed: "Dependency, betrayal anxiety, unstable pact, attachment without safety.",
-    image: img("file_0000000095f8722f96dc00aea475bdb7.png"),
+    image: img("the_bond_of_trust_and_loyalty.png"),
   }),
   createCard({
     id: "major-07-the-vehicle",
@@ -132,7 +132,7 @@ export const majorArcana = [
     rank: "VII",
     meaning: "Momentum, directed force, mission movement, the vessel under command.",
     reversed: "Recklessness, stalled advance, poor steering, motion without navigation.",
-    image: img("file_00000000c0fc720c86ed4b4ed8ba13d5.png"),
+    image: img("commander_of_the_orca_vessel.png"),
   }),
   createCard({
     id: "major-08-the-sentinel",
@@ -143,7 +143,7 @@ export const majorArcana = [
     rank: "VIII",
     meaning: "Discipline, vigilance, boundary protection, watchfulness without panic.",
     reversed: "Hypervigilance, brittle defense, isolation, boundary becoming fortress.",
-    image: img("file_00000000b6e8720c8735502b89fb1e0e.png"),
+    image: img("the_sentinel_of_the_orca_guardian.png"),
   }),
   createCard({
     id: "major-09-the-hermit-node",
@@ -154,7 +154,7 @@ export const majorArcana = [
     rank: "IX",
     meaning: "Deep analysis, solitude, internal computation, intelligence away from the crowd.",
     reversed: "Withdrawal, obsession, analysis paralysis, isolation that feeds distortion.",
-    image: img("file_00000000443c722fbedc541d5f19f9ec.png"),
+    image: img("the_hermit_node_and_celestial_signals.png"),
   }),
   createCard({
     id: "major-10-the-wheel-of-systems",
@@ -165,7 +165,7 @@ export const majorArcana = [
     rank: "X",
     meaning: "Cycles, network effects, turning points, system-level motion.",
     reversed: "Repeating loops, bad timing, systemic drag, trapped cycles.",
-    image: img("file_00000000db3471fd98857fc49bfc6157.png"),
+    image: img("the_wheel_of_systems.png"),
   }),
   createCard({
     id: "major-11-the-arbiter",
@@ -176,7 +176,7 @@ export const majorArcana = [
     rank: "XI",
     meaning: "Justice, calibration, truth, balance, clean measurement.",
     reversed: "Bias, unfair judgment, miscalibration, corrupted scales.",
-    image: img("file_0000000040a471fdbdc080985f6ea500.png"),
+    image: img("the_arbiter_of_truth_and_logic.png"),
   }),
   createCard({
     id: "major-12-the-suspended-mind",
@@ -187,7 +187,7 @@ export const majorArcana = [
     rank: "XII",
     meaning: "Reframing, surrender, strategic pause, seeing from another angle.",
     reversed: "Stagnation, avoidance, martyrdom, pause becoming paralysis.",
-    image: img("file_00000000f50471fd855d62e315558f07.png"),
+    image: img("the_suspended_mind_tarot_card.png"),
   }),
   createCard({
     id: "major-13-the-collapse",
@@ -198,7 +198,7 @@ export const majorArcana = [
     rank: "XIII",
     meaning: "Transformation through destruction, release, the necessary ending.",
     reversed: "Clinging to ruin, fear of necessary ending, decay defended as identity.",
-    image: img("file_000000006e6471fd83d08db236535e5d.png"),
+    image: img("the_collapse_chaos_and_renewal.png"),
   }),
   createCard({
     id: "major-14-the-integrator",
@@ -209,7 +209,7 @@ export const majorArcana = [
     rank: "XIV",
     meaning: "Healing, synthesis, recovery, reconciliation, parts becoming system.",
     reversed: "Fragmentation, imbalance, failed integration, incompatible pieces forced together.",
-    image: img("file_00000000246071fdabefbbba4d0c617d.png"),
+    image: img("the_integrator_tarot_card_design.png"),
   }),
   createCard({
     id: "major-15-the-hollow-man",
@@ -220,7 +220,7 @@ export const majorArcana = [
     rank: "XV",
     meaning: "False self, predation, emotional vacancy, mimicry without soul.",
     reversed: "Exposure, escape from manipulation, returning substance, mask removed.",
-    image: img("file_00000000498c71fd9a80a1f3c8e506fa.png"),
+    image: img("the_hollow_man_tarot_card.png"),
   }),
   createCard({
     id: "major-16-the-breach",
@@ -231,7 +231,7 @@ export const majorArcana = [
     rank: "XVI",
     meaning: "Catastrophic failure, revealed weakness, rupture of containment.",
     reversed: "Warning ignored, controlled demolition, delayed shock, slow breach.",
-    image: img("file_000000007d3871fd860831627878fa80.png"),
+    image: img("the_breach_of_containment_protocol.png"),
   }),
   createCard({
     id: "major-17-the-signal",
@@ -242,7 +242,7 @@ export const majorArcana = [
     rank: "XVII",
     meaning: "Hope, guidance, transmission, north star, clean signal from distance.",
     reversed: "Static, lost signal, false promise, transmission without source.",
-    image: img("file_00000000329871fd9a7b9f5f38a5e8cd.png"),
+    image: img("the_signal_of_hope_and_guidance.png"),
   }),
   createCard({
     id: "major-18-the-abyss",
@@ -253,7 +253,7 @@ export const majorArcana = [
     rank: "XVIII",
     meaning: "Fear, dream logic, unconscious drives, the deep ocean of the psyche.",
     reversed: "Clarity after fear, illusions dissolving, surfacing from the deep.",
-    image: img("file_00000000a3bc7230bbb8103ee9d855cb.png"),
+    image: img("the_abyssal_journey_through_cosmic_depths.png"),
   }),
   createCard({
     id: "major-19-the-flame",
@@ -264,7 +264,7 @@ export const majorArcana = [
     rank: "XIX",
     meaning: "Vitality, conviction, warmth, success, radiant life-force.",
     reversed: "Burnout, pride, false radiance, heat without nourishment.",
-    image: img("file_00000000dea871f8b4a08b6a5861f224.png"),
+    image: img("the_flame_rise_and_heal.png"),
   }),
   createCard({
     id: "major-20-the-reckoning",
@@ -275,7 +275,7 @@ export const majorArcana = [
     rank: "XX",
     meaning: "Truth, accountability, renewal, hearing the call to become honest.",
     reversed: "Denial, shame loop, refusing the call, evading the verdict.",
-    image: img("file_00000000eb7c71fdaf9e269e80345c2e (1).png"),
+    image: img("the_reckoning_truth_and_renewal.png"),
   }),
   createCard({
     id: "major-21-orca",
@@ -286,7 +286,7 @@ export const majorArcana = [
     rank: "XXI",
     meaning: "Full-system integration, emergence, wholeness, the completed pod intelligence.",
     reversed: "Incomplete integration, fragmentation, unfinished cycle, system not yet coherent.",
-    image: img("file_00000000ea3871fdaaf475944b599e89 (1).png"),
+    image: img("orca_tides_and_cosmic_currents.png"),
   }),
 ];
 
@@ -306,10 +306,10 @@ export const suits = {
     createCard({ id: "flames-08-eight", name: "Eight of Flames", suit: "Flames", type: "Minor Arcana", number: 8, rank: "Eight", meaning: "Acceleration, rapid signals, urgent movement, fast deployment.", reversed: "Scatter, delay, messages misfire, speed without aim.", image: img("file_00000000a88071f7bb1419dbd58fabdc.png") }),
     createCard({ id: "flames-09-nine", name: "Nine of Flames", suit: "Flames", type: "Minor Arcana", number: 9, rank: "Nine", meaning: "Endurance, guarded strength, last stand, battle-tested fire.", reversed: "Exhaustion, trauma armor, distrust, defense that becomes a prison.", image: img("file_00000000bf64720c8f1ec8865e7b39bd.png") }),
     createCard({ id: "flames-10-ten", name: "Ten of Flames", suit: "Flames", type: "Minor Arcana", number: 10, rank: "Ten", meaning: "Burden, overwork, carrying the fire too far, mission overload.", reversed: "Release, delegation, dropping false obligations, controlled cooling.", image: img("file_0000000001d8720cb416e9c671dd57a3.png") }),
-    createCard({ id: "flames-court-initiate", name: "Initiate of Flames", suit: "Flames", type: "Court", rank: "Initiate", meaning: "Learning courage, first mission, young fire, first oath.", reversed: "Impulsiveness, posturing, reckless start, fire without discipline.", image: img("file_00000000b2a071f89edb0dcae979c2d0.png") }),
-    createCard({ id: "flames-court-operator", name: "Operator of Flames", suit: "Flames", type: "Court", rank: "Operator", meaning: "Action under pressure, pursuit, bold execution, active will.", reversed: "Burning bridges, speed without aim, aggression without doctrine.", image: img("file_00000000928871fdaef96b8b6573ccf4.png") }),
-    createCard({ id: "flames-court-keeper", name: "Keeper of Flames", suit: "Flames", type: "Court", rank: "Keeper", meaning: "Sustained passion, moral heat, creative leadership, protected flame.", reversed: "Drama, domination, unstable charisma, charisma used as firestorm.", image: img("file_00000000eec871fdad90d516a42af342.png") }),
-    createCard({ id: "flames-court-commander", name: "Commander of Flames", suit: "Flames", type: "Court", rank: "Commander", meaning: "Commanding will, decisive leadership, disciplined fire.", reversed: "Tyranny, rage, command without wisdom, uncontrolled blaze.", image: img("file_000000002cec71fd85bbfa2ec0eb6fda.png") }),
+    createCard({ id: "flames-court-initiate", name: "Initiate of Flames", suit: "Flames", type: "Court", rank: "Initiate", meaning: "Learning courage, first mission, young fire, first oath.", reversed: "Impulsiveness, posturing, reckless start, fire without discipline.", image: img("initiate_of_flames_tarot_card.png") }),
+    createCard({ id: "flames-court-operator", name: "Operator of Flames", suit: "Flames", type: "Court", rank: "Operator", meaning: "Action under pressure, pursuit, bold execution, active will.", reversed: "Burning bridges, speed without aim, aggression without doctrine.", image: img("operator_of_flames_tarot_card.png") }),
+    createCard({ id: "flames-court-keeper", name: "Keeper of Flames", suit: "Flames", type: "Court", rank: "Keeper", meaning: "Sustained passion, moral heat, creative leadership, protected flame.", reversed: "Drama, domination, unstable charisma, charisma used as firestorm.", image: img("keeper_of_flames_tarot_design.png") }),
+    createCard({ id: "flames-court-commander", name: "Commander of Flames", suit: "Flames", type: "Court", rank: "Commander", meaning: "Commanding will, decisive leadership, disciplined fire.", reversed: "Tyranny, rage, command without wisdom, uncontrolled blaze.", image: img("commander_of_flames_tarot_card_design.png") }),
   ],
 
   Waves: [
@@ -323,10 +323,10 @@ export const suits = {
     createCard({ id: "waves-08-eight", name: "Eight of Waves", suit: "Waves", type: "Minor Arcana", number: 8, rank: "Eight", meaning: "Departure, walking away, seeking deeper truth, leaving shallow water.", reversed: "Avoidance, fear of leaving the familiar, circling the same inlet.", image: img("file_00000000bacc722fa2352b2a19b50e76.png") }),
     createCard({ id: "waves-09-nine", name: "Nine of Waves", suit: "Waves", type: "Minor Arcana", number: 9, rank: "Nine", meaning: "Emotional fulfillment, wish, inner satisfaction, safe harbor.", reversed: "Excess, self-satisfaction, empty pleasure, comfort without depth.", image: img("file_000000009da0720ca08f4ece9b19266c.png") }),
     createCard({ id: "waves-10-ten", name: "Ten of Waves", suit: "Waves", type: "Minor Arcana", number: 10, rank: "Ten", meaning: "Family, pod, sanctuary, emotional completion, full belonging.", reversed: "Idealized belonging, fragile harmony, pod image without safety.", image: img("file_0000000003f8720c92f5daaf75de5a1d.png") }),
-    createCard({ id: "waves-court-initiate", name: "Initiate of Waves", suit: "Waves", type: "Court", rank: "Initiate", meaning: "Tender message, empathy, emotional learning, first contact.", reversed: "Immaturity, mixed signals, fantasy speech, emotional confusion.", image: img("file_000000009e4871fdbfc3535b4f2100ef.png") }),
-    createCard({ id: "waves-court-operator", name: "Operator of Waves", suit: "Waves", type: "Court", rank: "Operator", meaning: "Romantic movement, emotional rescue, devotion, active compassion.", reversed: "Mood-driven action, savior impulse, rescue fantasy.", image: img("file_000000009ccc71f8b35d46961d10fc01.png") }),
-    createCard({ id: "waves-court-keeper", name: "Keeper of Waves", suit: "Waves", type: "Court", rank: "Keeper", meaning: "Deep compassion, emotional stewardship, healing presence.", reversed: "Absorption, overwhelm, porous boundaries, drowning in feeling.", image: img("file_00000000dc4871fdb770777c566da38d.png") }),
-    createCard({ id: "waves-court-commander", name: "Commander of Waves", suit: "Waves", type: "Court", rank: "Commander", meaning: "Emotional mastery, calm leadership, wise care under pressure.", reversed: "Emotional control, withholding, hidden tides, calm used as mask.", image: img("file_00000000ef707230b003df398190de37.png")  }),
+    createCard({ id: "waves-court-initiate", name: "Initiate of Waves", suit: "Waves", type: "Court", rank: "Initiate", meaning: "Tender message, empathy, emotional learning, first contact.", reversed: "Immaturity, mixed signals, fantasy speech, emotional confusion.", image: null }),
+    createCard({ id: "waves-court-operator", name: "Operator of Waves", suit: "Waves", type: "Court", rank: "Operator", meaning: "Romantic movement, emotional rescue, devotion, active compassion.", reversed: "Mood-driven action, savior impulse, rescue fantasy.", image: null }),
+    createCard({ id: "waves-court-keeper", name: "Keeper of Waves", suit: "Waves", type: "Court", rank: "Keeper", meaning: "Deep compassion, emotional stewardship, healing presence.", reversed: "Absorption, overwhelm, porous boundaries, drowning in feeling.", image: null }),
+    createCard({ id: "waves-court-commander", name: "Commander of Waves", suit: "Waves", type: "Court", rank: "Commander", meaning: "Emotional mastery, calm leadership, wise care under pressure.", reversed: "Emotional control, withholding, hidden tides, calm used as mask.", image: null }),
   ],
 
   Circuits: [
@@ -348,7 +348,7 @@ export const suits = {
 
   Foundations: [
     createCard({ id: "foundations-01-ace", name: "Ace of Foundations", suit: "Foundations", type: "Minor Arcana", number: 1, rank: "Ace", meaning: "A real beginning, resource, stable seed, first stone.", reversed: "Missed opportunity, weak material base, seed placed on unstable ground.", image: img("file_00000000460471f589a9136c1ea167e3.png") }),
-    createCard({ id: "foundations-02-two", name: "Two of Foundations", suit: "Foundations", type: "Minor Arcana", number: 2, rank: "Two", meaning: "Balancing resources, adaptation, practical choice, moving weight cleanly.", reversed: "Overextension, unstable juggling, resources slipping.", image: img("file_000000002ce0722fa7260f8a705090c1.png") }),
+    createCard({ id: "foundations-02-two", name: "Two of Foundations", suit: "Foundations", type: "Minor Arcana", number: 2, rank: "Two", meaning: "Balancing resources, adaptation, practical choice, moving weight cleanly.", reversed: "Overextension, unstable juggling, resources slipping.", image: img("two_of_foundations_building_towards_balance.png") }),
     createCard({ id: "foundations-03-three", name: "Three of Foundations", suit: "Foundations", type: "Minor Arcana", number: 3, rank: "Three", meaning: "Craft, teamwork, building with skill, coordinated labor.", reversed: "Poor planning, uncoordinated labor, work without blueprint.", image: img("file_00000000d708720c8b10b1a9d9bd6317.png") }),
     createCard({ id: "foundations-04-four", name: "Four of Foundations", suit: "Foundations", type: "Minor Arcana", number: 4, rank: "Four", meaning: "Security, holding resources, boundaries, locked structure.", reversed: "Hoarding, fear-based control, stability becoming prison.", image: img("file_000000003b24720cbafdde8f2241d015.png") }),
     createCard({ id: "foundations-05-five", name: "Five of Foundations", suit: "Foundations", type: "Minor Arcana", number: 5, rank: "Five", meaning: "Hardship, scarcity, exclusion, cold systems, material stress.", reversed: "Aid found, recovery path, asking for help, re-entry to shelter.", image: img("file_0000000042b471f5a645c9b67c1abb87.png") }),
@@ -357,10 +357,10 @@ export const suits = {
     createCard({ id: "foundations-08-eight", name: "Eight of Foundations", suit: "Foundations", type: "Minor Arcana", number: 8, rank: "Eight", meaning: "Discipline, apprenticeship, skill-building, repeated craft.", reversed: "Sloppy repetition, no mastery, effort without refinement.", image: img("file_000000000d50722fa5d18f556d81d214.png") }),
     createCard({ id: "foundations-09-nine", name: "Nine of Foundations", suit: "Foundations", type: "Minor Arcana", number: 9, rank: "Nine", meaning: "Independence, sanctuary, earned stability, clean order.", reversed: "Isolation, comfort as cage, material peace without connection.", image: img("file_00000000dcfc720c8315472f9f903010.png") }),
     createCard({ id: "foundations-10-ten", name: "Ten of Foundations", suit: "Foundations", type: "Minor Arcana", number: 10, rank: "Ten", meaning: "Legacy, home base, durable civilization, generational shelter.", reversed: "Family burden, inherited structure failing, old architecture cracking.", image: img("file_000000005598722fad7ebeefa961d83b.png") }),
-    createCard({ id: "foundations-court-initiate", name: "Initiate of Foundations", suit: "Foundations", type: "Court", rank: "Initiate", meaning: "Learning craft, practical start, resource awareness, first tool.", reversed: "Naivety, procrastination, poor habits, material confusion.", image: img("file_00000000a840722f9e6860e5c08b1f1c.png") }),
-    createCard({ id: "foundations-court-operator", name: "Operator of Foundations", suit: "Foundations", type: "Court", rank: "Operator", meaning: "Steady work, reliable movement, service, durable action.", reversed: "Stubbornness, slow drift, routine without life.", image: img("file_00000000f798722fad5708a0c1be1204.png") }),
-    createCard({ id: "foundations-court-keeper", name: "Keeper of Foundations", suit: "Foundations", type: "Court", rank: "Keeper", meaning: "Stewardship, care, practical abundance, protected home.", reversed: "Overcare, material anxiety, possessiveness, shelter as control.", image: img("file_0000000065fc722faecd86c7ca3dd126.png") }),
-    createCard({ id: "foundations-court-commander", name: "Commander of Foundations", suit: "Foundations", type: "Court", rank: "Commander", meaning: "Logistics, protection, material mastery, command of resources.", reversed: "Control through resources, rigidity, greed, fortress mentality.", image: img("file_000000009028722f95fca528ab31a373.png") }),
+    createCard({ id: "foundations-court-initiate", name: "Initiate of Foundations", suit: "Foundations", type: "Court", rank: "Initiate", meaning: "Learning craft, practical start, resource awareness, first tool.", reversed: "Naivety, procrastination, poor habits, material confusion.", image: null }),
+    createCard({ id: "foundations-court-operator", name: "Operator of Foundations", suit: "Foundations", type: "Court", rank: "Operator", meaning: "Steady work, reliable movement, service, durable action.", reversed: "Stubbornness, slow drift, routine without life.", image: null }),
+    createCard({ id: "foundations-court-keeper", name: "Keeper of Foundations", suit: "Foundations", type: "Court", rank: "Keeper", meaning: "Stewardship, care, practical abundance, protected home.", reversed: "Overcare, material anxiety, possessiveness, shelter as control.", image: null }),
+    createCard({ id: "foundations-court-commander", name: "Commander of Foundations", suit: "Foundations", type: "Court", rank: "Commander", meaning: "Logistics, protection, material mastery, command of resources.", reversed: "Control through resources, rigidity, greed, fortress mentality.", image: null }),
   ],
 };
 
