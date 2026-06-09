@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORCA AI Tarot Flipbook</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #030507;
+      color: #fff3d6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(28, 129, 154, 0.32), transparent 34%),
+        radial-gradient(circle at top right, rgba(210, 80, 38, 0.22), transparent 36%),
+        linear-gradient(135deg, #061016, #030507 55%, #090806);
+      overflow-x: hidden;
+    }
+    .shell { max-width: 1240px; margin: 0 auto; padding: 18px; }
+    header {
+      display: flex; justify-content: space-between; gap: 16px; align-items: center;
+      padding: 20px; border: 1px solid rgba(247, 201, 109, 0.24); border-radius: 24px;
+      background: rgba(0,0,0,0.38); backdrop-filter: blur(14px);
+      box-shadow: 0 18px 54px rgba(0,0,0,0.34);
+    }
+    h1 { margin: 0; font: 700 clamp(32px, 7vw, 58px)/0.95 Georgia, "Times New Roman", serif; }
+    header p { margin: 8px 0 0; color: #cfc6b5; line-height: 1.45; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    button, select, input {
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 10px 12px;
+      background: rgba(255,255,255,0.07); color: #fff3d6; font: inherit;
+    }
+    button { cursor: pointer; font-weight: 750; }
+    button.primary { border: 0; color: #15100a; background: linear-gradient(135deg, #f8d68a, #cf8d35); }
+    main { display: grid; grid-template-columns: minmax(320px, 450px) 1fr; gap: 22px; margin-top: 22px; align-items: start; }
+    .book-wrap {
+      position: sticky; top: 16px; perspective: 1300px; display: grid; place-items: center;
+      min-height: 680px; border-radius: 28px; border: 1px solid rgba(247,201,109,0.18);
+      background: radial-gradient(circle at center, rgba(247,201,109,0.10), transparent 42%), rgba(0,0,0,0.30);
+      overflow: hidden;
+    }
+    .book-glow { position: absolute; inset: -40%; background: conic-gradient(from 0deg, transparent, rgba(247,201,109,.18), transparent, rgba(87,190,214,.16), transparent); animation: spin 14s linear infinite; opacity: .65; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .page {
+      position: relative; z-index: 2; width: min(86vw, 360px); min-height: 590px; border-radius: 22px;
+      transform-style: preserve-3d; transition: transform .55s ease, filter .55s ease;
+      border: 2px solid rgba(247,201,109,.62); overflow: hidden; background: #07090b;
+      box-shadow: 0 30px 75px rgba(0,0,0,.58);
+    }
+    .page.flip-next { transform: rotateY(-22deg) translateX(16px); filter: brightness(1.08); }
+    .page.flip-prev { transform: rotateY(22deg) translateX(-16px); filter: brightness(1.08); }
+    .card-img { width: 100%; height: 500px; object-fit: cover; object-position: top; display: block; background: #040608; }
+    .fallback {
+      height: 500px; display: grid; place-items: center; text-align: center; padding: 24px;
+      background: radial-gradient(circle at center, rgba(247,201,109,.15), transparent 32%), #06080a;
+    }
+    .fallback span { font-size: 58px; display: block; margin-bottom: 10px; }
+    .caption { padding: 14px; background: rgba(0,0,0,.70); }
+    .caption small { color: #f7c96d; letter-spacing: .12em; text-transform: uppercase; }
+    .caption h2 { margin: 4px 0 0; font: 700 28px Georgia, "Times New Roman", serif; }
+    .meta-panel {
+      border: 1px solid rgba(255,255,255,.12); border-radius: 24px; background: rgba(0,0,0,.35); padding: 20px;
+      box-shadow: 0 18px 44px rgba(0,0,0,.28); backdrop-filter: blur(14px);
+    }
+    .meta-panel .eyebrow { color: #f7c96d; letter-spacing: .2em; text-transform: uppercase; font-size: 12px; }
+    .meta-panel h2 { font: 700 clamp(32px, 5vw, 52px)/1 Georgia, "Times New Roman", serif; margin: 10px 0 8px; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .box { border: 1px solid rgba(255,255,255,.11); border-radius: 16px; padding: 14px; background: rgba(255,255,255,.05); }
+    .box h3 { margin: 0 0 8px; color: #f7d68b; font-size: 16px; }
+    .box p { margin: 0; color: #ddd3c1; line-height: 1.55; }
+    .strip { display: flex; gap: 8px; overflow-x: auto; padding: 14px 2px; margin-top: 12px; }
+    .thumb {
+      flex: 0 0 72px; height: 102px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; overflow: hidden; background: #050607; opacity: .7;
+    }
+    .thumb.active { outline: 2px solid #f7c96d; opacity: 1; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .progress { margin-top: 14px; color: #b8aea2; display: flex; justify-content: space-between; gap: 12px; }
+    @media (max-width: 880px) {
+      header, main { grid-template-columns: 1fr; display: grid; }
+      .controls { justify-content: flex-start; }
+      .book-wrap { position: relative; top: 0; min-height: 600px; }
+      .page { min-height: 540px; }
+      .card-img, .fallback { height: 440px; }
+      .meta-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .shell { padding: 10px; }
+      .book-wrap { min-height: 540px; }
+      .page { width: 92vw; min-height: 500px; }
+      .card-img, .fallback { height: 400px; }
+      header, .meta-panel { border-radius: 18px; padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>ORCA AI Tarot Flipbook</h1>
+        <p>Browse the deck as a tactile animated flipbook. Use the filters, arrows, keyboard, or thumbnail rail.</p>
+      </div>
+      <div class="controls">
+        <select id="suitFilter" aria-label="Filter by suit"><option value="all">All cards</option></select>
+        <button id="prevBtn" type="button">← Previous</button>
+        <button id="nextBtn" class="primary" type="button">Next →</button>
+        <button id="randomBtn" type="button">Random</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="book-wrap" aria-live="polite">
+        <div class="book-glow"></div>
+        <article id="page" class="page"></article>
+      </section>
+      <section class="meta-panel">
+        <div class="eyebrow" id="typeLine">Loading</div>
+        <h2 id="cardName">Loading deck…</h2>
+        <div class="progress"><span id="counter">0 / 0</span><span id="imageStatus"></span></div>
+        <div class="meta-grid">
+          <div class="box"><h3>Upright</h3><p id="meaning">Loading.</p></div>
+          <div class="box"><h3>Reversed</h3><p id="reversed">Loading.</p></div>
+        </div>
+        <div class="box" style="margin-top:12px"><h3>System Tags</h3><p id="tags">—</p></div>
+        <div class="strip" id="thumbStrip" aria-label="Card thumbnails"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const els = {
+      page: document.getElementById('page'),
+      name: document.getElementById('cardName'),
+      type: document.getElementById('typeLine'),
+      counter: document.getElementById('counter'),
+      imageStatus: document.getElementById('imageStatus'),
+      meaning: document.getElementById('meaning'),
+      reversed: document.getElementById('reversed'),
+      tags: document.getElementById('tags'),
+      strip: document.getElementById('thumbStrip'),
+      filter: document.getElementById('suitFilter')
+    };
+    let allCards = [];
+    let visible = [];
+    let index = 0;
+
+    const normalizeImage = (src) => src ? (src.startsWith('/') ? `.${src}` : src) : '';
+    const glyphFor = (card) => card.suit === 'Flames' ? '🔥' : card.suit === 'Waves' ? '〰' : card.suit === 'Circuits' ? '⌬' : card.suit === 'Foundations' ? '▣' : card.suit === 'Shadow' ? '◐' : '◈';
+
+    function render(direction = 'next') {
+      const card = visible[index];
+      if (!card) return;
+      els.page.classList.remove('flip-next', 'flip-prev');
+      void els.page.offsetWidth;
+      els.page.classList.add(direction === 'prev' ? 'flip-prev' : 'flip-next');
+      setTimeout(() => els.page.classList.remove('flip-next', 'flip-prev'), 560);
+
+      const image = normalizeImage(card.image);
+      els.page.innerHTML = `
+        ${image ? `<img class="card-img" src="${image}" alt="${card.name}" onerror="this.outerHTML='<div class=\'fallback\'><div><span>${glyphFor(card)}</span><strong>${card.name}</strong><br><small>Image not installed</small></div></div>'">` : `<div class="fallback"><div><span>${glyphFor(card)}</span><strong>${card.name}</strong><br><small>Fallback page</small></div></div>`}
+        <div class="caption"><small>${card.rank || card.number || ''} · ${card.suit} · ${card.type}</small><h2>${card.name}</h2></div>
+      `;
+      els.name.textContent = card.name;
+      els.type.textContent = `${card.rank || card.number || ''} · ${card.suit} · ${card.type}`;
+      els.counter.textContent = `${index + 1} / ${visible.length}`;
+      els.imageStatus.textContent = card.image ? 'Mapped art' : 'Fallback art';
+      els.meaning.textContent = card.meaning || 'No upright meaning recorded.';
+      els.reversed.textContent = card.reversed || 'No reversed meaning recorded.';
+      els.tags.textContent = (card.tags && card.tags.length) ? card.tags.join(' · ') : 'ORCA system card';
+      renderThumbs();
+    }
+
+    function renderThumbs() {
+      els.strip.innerHTML = visible.map((card, i) => {
+        const image = normalizeImage(card.image);
+        return `<button class="thumb ${i === index ? 'active' : ''}" data-index="${i}" title="${card.name}">${image ? `<img src="${image}" alt="">` : glyphFor(card)}</button>`;
+      }).join('');
+      els.strip.querySelectorAll('.thumb').forEach(btn => btn.addEventListener('click', () => { index = Number(btn.dataset.index); render('next'); }));
+      const active = els.strip.querySelector('.thumb.active');
+      active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
+
+    function move(delta) {
+      if (!visible.length) return;
+      const direction = delta < 0 ? 'prev' : 'next';
+      index = (index + delta + visible.length) % visible.length;
+      render(direction);
+    }
+
+    function applyFilter() {
+      const suit = els.filter.value;
+      visible = suit === 'all' ? [...allCards] : allCards.filter(card => card.suit === suit);
+      index = 0;
+      render('next');
+    }
+
+    fetch('./orca-deck.json')
+      .then(res => res.json())
+      .then(deck => {
+        allCards = deck.cards || deck;
+        visible = [...allCards];
+        [...new Set(allCards.map(card => card.suit).filter(Boolean))].forEach(suit => {
+          const option = document.createElement('option');
+          option.value = suit;
+          option.textContent = suit;
+          els.filter.appendChild(option);
+        });
+        render('next');
+      })
+      .catch(error => {
+        els.name.textContent = 'Deck JSON failed to load';
+        els.meaning.textContent = String(error);
+      });
+
+    document.getElementById('prevBtn').addEventListener('click', () => move(-1));
+    document.getElementById('nextBtn').addEventListener('click', () => move(1));
+    document.getElementById('randomBtn').addEventListener('click', () => { index = Math.floor(Math.random() * visible.length); render('next'); });
+    els.filter.addEventListener('change', applyFilter);
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') move(-1);
+      if (event.key === 'ArrowRight') move(1);
+    });
+  </script>
+</body>
+</html>
