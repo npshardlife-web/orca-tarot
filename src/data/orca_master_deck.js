@@ -99,7 +99,7 @@ export const majorArcana = [
     rank: "IV",
     meaning: "Command, planning, doctrine, tactical intelligence, disciplined control.",
     reversed: "Control fixation, coldness, rigidity, command without adaptation.",
-    image: img("the_strategist_in_command.png"),
+    image: img("file_00000000088c71f79ff07ae3faedac35.png"),
   }),
   createCard({
     id: "major-05-the-keeper",
@@ -121,7 +121,7 @@ export const majorArcana = [
     rank: "VI",
     meaning: "Loyalty, attachment, alliance, love, the sacred pact of the pod.",
     reversed: "Dependency, betrayal anxiety, unstable pact, attachment without safety.",
-    image: img("the_bond_of_trust_and_loyalty.png"),
+    image: img("file_0000000095f8722f96dc00aea475bdb7.png"),
   }),
   createCard({
     id: "major-07-the-vehicle",
