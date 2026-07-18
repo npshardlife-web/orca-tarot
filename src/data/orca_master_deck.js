@@ -1,3 +1,4 @@
+//
 const IMG = "/images/orca-tarot";
 export const img = (filename) => `${IMG}/${filename}`;
 
